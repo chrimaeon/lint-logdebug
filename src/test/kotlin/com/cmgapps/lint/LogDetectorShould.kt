@@ -39,6 +39,20 @@ class LogDetectorShould {
                     |       android.util.Log.d("TestTag", "Message");
                     |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     |0 errors, 1 warnings""".trimMargin())
+                .expectFixDiffs("""
+                    |Fix for src/Test.java line 3: Surround with `if (BuildConfig.DEBUG)`:
+                    |@@ -3 +3
+                    |-        android.util.Log.d("TestTag", "Message");
+                    |+        if (BuildConfig.DEBUG) {
+                    |+     android.util.Log.d("TestTag", "Message");
+                    |+ };
+                    |Fix for src/Test.java line 3: Surround with `if (Log.isLoggable(...)`:
+                    |@@ -3 +3
+                    |-        android.util.Log.d("TestTag", "Message");
+                    |+        if (Log.isLoggable(TAG, Log.DEBUG) {
+                    |+    android.util.Log.d("TestTag", "Message");
+                    |+ };
+                """.trimMargin())
     }
 
     @Test
@@ -90,6 +104,20 @@ class LogDetectorShould {
                     |       android.util.Log.d("TestTag", "Message");
                     |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     |0 errors, 1 warnings""".trimMargin())
+                .expectFixDiffs("""
+                    |Fix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
+                    |@@ -3 +3
+                    |-        android.util.Log.d("TestTag", "Message");
+                    |+        if (BuildConfig.DEBUG) {
+                    |+     android.util.Log.d("TestTag", "Message")
+                    |+ };
+                    |Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...)`:
+                    |@@ -3 +3
+                    |-        android.util.Log.d("TestTag", "Message");
+                    |+        if (Log.isLoggable(TAG, Log.DEBUG) {
+                    |+    android.util.Log.d("TestTag", "Message")
+                    |+ };
+                """.trimMargin())
     }
 
     @Test

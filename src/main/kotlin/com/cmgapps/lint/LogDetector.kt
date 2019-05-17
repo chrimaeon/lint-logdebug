@@ -44,7 +44,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             val message = "The log call Log.${node.methodName}(...) should be " +
                     "conditional: surround with `if (Log.isLoggable(...))` or " +
                     "`if (BuildConfig.DEBUG) { ... }`"
-            context.report(issue, node, context.getLocation(node), message)
+            context.report(issue, node, context.getLocation(node), message, quickFix(node))
         }
     }
 
@@ -66,6 +66,50 @@ class LogDetector : Detector(), SourceCodeScanner {
         return false
     }
 
+    private fun quickFix(node: UCallExpression): LintFix {
+        val isKotlin = isKotlin(node.sourcePsi!!.language)
+
+        val sourceString = if (isKotlin) {
+            node.uastParent!!.asSourceString()
+        } else {
+            node.asSourceString()
+        }
+
+        val buildConfigFix = """
+            |if (BuildConfig.DEBUG) {
+            |    $sourceString${if (!isKotlin) ";" else ""}
+            |}
+        """.trimMargin()
+        val isLoggableFix = """
+            |if (Log.isLoggable(TAG, ${getLogLevel(node.methodName!!)}) {
+            |   $sourceString${if (!isKotlin) ";" else ""}
+            |}
+        """.trimMargin()
+
+        return fix().group()
+                .add(fix().name("Surround with `if (BuildConfig.DEBUG)`")
+                        .replace()
+                        .text(sourceString)
+                        .shortenNames()
+                        .reformat(true)
+                        .with(buildConfigFix)
+                        .build())
+                .add(fix().name("Surround with `if (Log.isLoggable(...)`")
+                        .replace()
+                        .text(sourceString)
+                        .shortenNames()
+                        .reformat(true)
+                        .with(isLoggableFix)
+                        .build())
+                .build()
+    }
+
+    private fun getLogLevel(methodName: String) = when (methodName) {
+        // see getApplicableMethodNames for valid method names
+        "d" -> "Log.DEBUG"
+        "v" -> "Log.VERBOSE"
+        else -> ""
+    }
 
     companion object {
         val issue = Issue.Companion.create(
