@@ -37,12 +37,11 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
     }
 }
 
-val lintVersion = "26.4.0"
+val lintVersion = "26.4.1"
 
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
     compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
-    implementation("com.android.tools.external.lombok:lombok-ast:0.2.3")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 

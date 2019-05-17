@@ -18,11 +18,11 @@ package com.cmgapps.lint
 
 import com.android.tools.lint.detector.api.*
 import com.intellij.psi.PsiMethod
-import lombok.ast.ClassDeclaration
-import lombok.ast.If
-import lombok.ast.MethodInvocation
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UIfExpression
+import org.jetbrains.uast.java.JavaUClass
+import org.jetbrains.uast.java.JavaUMethod
 
 class LogDetector : Detector(), SourceCodeScanner {
 
@@ -41,7 +41,10 @@ class LogDetector : Detector(), SourceCodeScanner {
         val withinConditional = checkWithinConditional(node)
 
         if (!withinConditional) {
-            context.report(issue, node, context.getLocation(node), "Not within Conditional")
+            val message = "The log call Log.${node.methodName}(...) should be " +
+                    "conditional: surround with `if (Log.isLoggable(...))` or " +
+                    "`if (BuildConfig.DEBUG) { ... }`"
+            context.report(issue, node, context.getLocation(node), message)
         }
     }
 
@@ -49,11 +52,12 @@ class LogDetector : Detector(), SourceCodeScanner {
         var curr: UElement? = node
         while (curr != null) {
 
-            if (curr is If) {
-                if (curr.astCondition().isStatementExpression) {
+            if (curr is UIfExpression) {
+                if (curr.condition.asSourceString().contains("BuildConfig.DEBUG") ||
+                        curr.condition.asSourceString().contains("Log.isLoggable")) {
                     return true
                 }
-            } else if (curr is MethodInvocation || curr is ClassDeclaration) {
+            } else if (curr is JavaUMethod || curr is JavaUClass) {
                 break
             }
 
@@ -65,21 +69,21 @@ class LogDetector : Detector(), SourceCodeScanner {
 
     companion object {
         val issue = Issue.Companion.create(
-            "LogConditional",
-            "Unconditional Logging calls",
-            "The BuildConfig class provides a constant, \"DEBUG\", " +
-                    "which indicates whether the code is being built in release mode or in debug " +
-                    "mode. In release mode, you typically want to strip out all the logging calls. " +
-                    "Since the compiler will automatically remove all code which is inside a " +
-                    "\"if (false)\" check, surrounding your logging calls with a check for " +
-                    "BuildConfig.DEBUG is a good idea.\n\n" +
-                    "If you *really* intend for the logging to be present in release mode, you can " +
-                    "suppress this warning with a @SuppressLint annotation for the intentional " +
-                    "logging calls.",
-            Category.PERFORMANCE,
-            5,
-            Severity.WARNING,
-            Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
+                "LogConditional",
+                "Unconditional Logging calls",
+                "The BuildConfig class provides a constant, \"DEBUG\", " +
+                        "which indicates whether the code is being built in release mode or in debug " +
+                        "mode. In release mode, you typically want to strip out all the logging calls. " +
+                        "Since the compiler will automatically remove all code which is inside a " +
+                        "\"if (false)\" check, surrounding your logging calls with a check for " +
+                        "BuildConfig.DEBUG is a good idea.\n\n" +
+                        "If you *really* intend for the logging to be present in release mode, you can " +
+                        "suppress this warning with a @SuppressLint annotation for the intentional " +
+                        "logging calls.",
+                Category.PERFORMANCE,
+                5,
+                Severity.WARNING,
+                Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
 
         val issues = arrayOf(issue)

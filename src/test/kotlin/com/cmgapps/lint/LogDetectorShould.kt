@@ -17,23 +17,110 @@
 package com.cmgapps.lint
 
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
+import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import org.junit.Test
 
 class LogDetectorShould {
 
     @Test
-    fun `report missing if statement`() {
+    fun `report missing if statement in java class`() {
         lint()
-            .files(java("""
-            |public class Test {
-            |   public void test() {
-            |       android.util.Log.d("TestTag", "Message");
-            |   }
-            |}
+                .files(java("""
+                    |public class Test {
+                    |   public void test() {
+                    |       android.util.Log.d("TestTag", "Message");
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("""
+                    |src/Test.java:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogConditional]
+                    |       android.util.Log.d("TestTag", "Message");
+                    |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    |0 errors, 1 warnings""".trimMargin())
+    }
+
+    @Test
+    fun `report no errors if nested in BuildConfig DEBUG in java class`() {
+        lint()
+                .files(java("""
+                    |public class Test {
+                    |   public void test() {
+                    |       if (BuildConfig.DEBUG) {
+                    |           android.util.Log.d("TestTag", "Message");
+                    |       }
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("No warnings.")
+    }
+
+    @Test
+    fun `report no errors if nested in Log isLoggable in java class`() {
+        lint()
+                .files(java("""
+                    |public class Test {
+                    |   public void test() {
+                    |       if (android.util.Log.isLoggable("Tag", Log.DEBUG)) {
+                    |           android.util.Log.d("TestTag", "Message");
+                    |       }
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("No warnings.")
+    }
+
+    @Test
+    fun `report missing if statement in kotlin class`() {
+        lint()
+                .files(kotlin("""
+                    |class Test {
+                    |   fun test() {
+                    |       android.util.Log.d("TestTag", "Message");
+                    |   }
+                    |}
             """.trimMargin()))
-            .issues(*LogDetector.issues)
-            .run()
-            .expect("Error")
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("""
+                    |src/Test.kt:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogConditional]
+                    |       android.util.Log.d("TestTag", "Message");
+                    |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    |0 errors, 1 warnings""".trimMargin())
+    }
+
+    @Test
+    fun `report no errors if nested in BuildConfig DEBUG in kotlin class`() {
+        lint()
+                .files(kotlin("""
+                    |class Test {
+                    |   fun test() {
+                    |       if (BuildConfig.DEBUG) {
+                    |           android.util.Log.d("TestTag", "Message");
+                    |       }
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("No warnings.")
+    }
+
+    @Test
+    fun `report no errors if nested in Log isLoggable in kotlin class`() {
+        lint()
+                .files(kotlin("""
+                    |class Test {
+                    |   fun test() {
+                    |       if (android.util.Log.isLoggable("Tag", Log.DEBUG)) {
+                    |           android.util.Log.d("TestTag", "Message")
+                    |       }
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("No warnings.")
     }
 }
