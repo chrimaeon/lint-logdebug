@@ -100,7 +100,7 @@ class LogDetectorShould {
                 .issues(*LogDetector.issues)
                 .run()
                 .expect("""
-                    |src/Test.kt:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogConditional]
+                    |src/Test.kt:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
                     |       android.util.Log.d("TestTag", "Message");
                     |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     |0 errors, 1 warnings""".trimMargin())
@@ -139,16 +139,53 @@ class LogDetectorShould {
     @Test
     fun `report no errors if nested in Log isLoggable in kotlin class`() {
         lint()
-                .files(kotlin("""
+            .files(
+                kotlin(
+                    """
                     |class Test {
                     |   fun test() {
                     |       if (android.util.Log.isLoggable("Tag", Log.DEBUG)) {
                     |           android.util.Log.d("TestTag", "Message")
                     |       }
                     |   }
+                    |}""".trimMargin()
+                )
+            )
+            .issues(*LogDetector.issues)
+            .run()
+            .expect("No warnings.")
+    }
+
+    @Test
+    fun `report errors if Timber in kotlin class`() {
+        lint()
+                .files(kotlin("""
+                    |class Test {
+                    |   fun test() {
+                    |       timber.log.Timber.d("TestTag", "Message")
+                    |   }
                     |}""".trimMargin()))
                 .issues(*LogDetector.issues)
                 .run()
-                .expect("No warnings.")
+            .expect("")
+    }
+
+    @Test
+    fun `report errors if Timber in java class`() {
+        lint()
+            .files(
+                java(
+                    """
+                    |import timber.log.Timber;
+                    |public class Test {
+                    |   public void test() {
+                    |       Timber.d("TestTag", "Message");
+                    |   }
+                    |}""".trimMargin()
+                )
+            )
+            .issues(*LogDetector.issues)
+            .run()
+            .expect("")
     }
 }
