@@ -1,7 +1,7 @@
 # Android Lint for log output
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Bintray](https://img.shields.io/bintray/v/chrimaeon/maven/com.cmgapps.lint%3Alint-log.svg?style=for-the-badge)](https://bintray.com/chrimaeon/maven/com.cmgapps.android%3Achecks)
+[![Bintray](https://img.shields.io/bintray/v/chrimaeon/maven/com.cmgapps.lint%3Alint-logdebug.svg?style=for-the-badge)](https://bintray.com/chrimaeon/maven/com.cmgapps.lint%3Alint-logdebug)
 
 Check your code for missing conditional surrounding your log output.
 
