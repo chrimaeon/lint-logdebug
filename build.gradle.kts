@@ -160,10 +160,6 @@ tasks {
 
 val lintVersion = "26.4.1"
 
-configurations {
-    register("timberLog")
-}
-
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
     compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
@@ -172,7 +168,4 @@ dependencies {
     testImplementation("com.android.tools.lint:lint:$lintVersion")
     testImplementation("com.android.tools.lint:lint-tests:$lintVersion")
     testImplementation("com.android.tools:testutils:$lintVersion")
-    testImplementation(fileTree("src/libs").matching { include("*.jar") })
-
-    "timberLog"("com.jakewharton.timber:timber:4.7.1")
 }

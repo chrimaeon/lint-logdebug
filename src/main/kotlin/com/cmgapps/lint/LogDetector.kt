@@ -16,6 +16,7 @@
 
 package com.cmgapps.lint
 
+import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.detector.api.*
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
@@ -44,7 +45,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             val message = "The log call Log.${node.methodName}(...) should be " +
                     "conditional: surround with `if (Log.isLoggable(...))` or " +
                     "`if (BuildConfig.DEBUG) { ... }`"
-            context.report(issue, node, context.getLocation(node), message, quickFix(node))
+            context.report(issue, node, context.getLocation(node), message, quickFix(node, method, evaluator))
         }
     }
 
@@ -67,13 +68,16 @@ class LogDetector : Detector(), SourceCodeScanner {
         return false
     }
 
-    private fun quickFix(node: UCallExpression): LintFix {
+    private fun quickFix(node: UCallExpression, method: PsiMethod, evaluator: JavaEvaluator): LintFix {
         val isKotlin = isKotlin(node.sourcePsi!!.language)
+        val isLogCall = evaluator.isMemberInClass(method, LOG_CLS)
 
-        val sourceString = if (isKotlin) {
-            node.uastParent!!.asSourceString()
+        val sourceString: String
+
+        if (isKotlin) {
+            sourceString = node.uastParent!!.asSourceString()
         } else {
-            node.asSourceString()
+            sourceString = node.asSourceString()
         }
 
         val buildConfigFix = """
@@ -81,24 +85,29 @@ class LogDetector : Detector(), SourceCodeScanner {
             |    $sourceString${if (!isKotlin) ";" else ""}
             |}
         """.trimMargin()
-        val isLoggableFix = """
-            |if (Log.isLoggable(TAG, ${getLogLevel(node.methodName!!)}) {
-            |   $sourceString${if (!isKotlin) ";" else ""}
-            |}
-        """.trimMargin()
 
-        return fix().group()
-                .add(
-                        fix().name("Surround with `if (BuildConfig.DEBUG)`")
-                                .replace()
-                                .text(sourceString)
-                                .shortenNames()
-                                .reformat(true)
-                                .with(buildConfigFix)
-                                .robot(true)
-                                .build()
-                )
-                .add(
+
+
+        return fix().group().apply {
+            add(
+                    fix().name("Surround with `if (BuildConfig.DEBUG)`")
+                            .replace()
+                            .text(sourceString)
+                            .shortenNames()
+                            .reformat(true)
+                            .with(buildConfigFix)
+                            .robot(true)
+                            .build()
+            )
+            if (isLogCall) {
+                val tag =
+                        node.valueArguments[0].asSourceString()
+
+                val isLoggableFix = """
+                            |if (Log.isLoggable($tag, ${getLogLevel(node.methodName!!)}) {
+                            |   $sourceString${if (!isKotlin) ";" else ""}
+                            |}""".trimMargin()
+                add(
                         fix().name("Surround with `if (Log.isLoggable(...)`")
                                 .replace()
                                 .text(sourceString)
@@ -108,6 +117,8 @@ class LogDetector : Detector(), SourceCodeScanner {
                                 .robot(true)
                                 .build()
                 )
+            }
+        }
                 .build()
     }
 
