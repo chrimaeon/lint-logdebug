@@ -52,12 +52,14 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 
 val pomName = "Android Log Lint Checks"
-val vcsUrl = "https://github.com/chrimaeon/lint-logdebug"
-val projectArtifactId = "lint-log"
+val projectWebsiteUrl = "https://github.com/chrimaeon/lint-logdebug"
+val projectArtifactId = "lint-logdebug"
+
+val mavenPublicationName = "bintray"
 
 publishing {
     publications {
-        register<MavenPublication>("bintray") {
+        register<MavenPublication>(mavenPublicationName) {
 
             from(components["java"])
 
@@ -69,7 +71,7 @@ publishing {
             pom {
                 name.set(pomName)
                 description.set("Android Lint checks for log output")
-                url.set(vcsUrl)
+                url.set(projectWebsiteUrl)
 
                 licenses {
                     license {
@@ -105,15 +107,17 @@ bintray {
     user = credentialProps.getProperty("user")
     key = credentialProps.getProperty("key")
 
-    setPublications("bintray")
+    setPublications(mavenPublicationName)
 
     pkg(closureOf<BintrayExtension.PackageConfig> {
         repo = "maven"
-        name = "${project.group}:${projectArtifactId}"
+        name = "${project.group}:$projectArtifactId"
         userOrg = user
         setLicenses("Apache-2.0")
-        vcsUrl = vcsUrl
+        vcsUrl = "$projectWebsiteUrl.git"
         issueTrackerUrl = "https://github.com/chrimaeon/lint-logdebug/issues"
+        websiteUrl = projectWebsiteUrl
+        githubRepo = "chrimaeon/lint-logdebug"
         version(closureOf<BintrayExtension.VersionConfig> {
             name = project.version as String
             vcsTag = project.version as String
