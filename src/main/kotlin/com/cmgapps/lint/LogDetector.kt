@@ -54,7 +54,7 @@ class LogDetector : Detector(), SourceCodeScanner {
 
             if (curr is UIfExpression) {
                 if (curr.condition.asSourceString().contains("BuildConfig.DEBUG") ||
-                    curr.condition.asSourceString().contains("Log.isLoggable")
+                        curr.condition.asSourceString().contains("Log.isLoggable")
                 ) {
                     return true
                 }
@@ -88,27 +88,27 @@ class LogDetector : Detector(), SourceCodeScanner {
         """.trimMargin()
 
         return fix().group()
-            .add(
-                fix().name("Surround with `if (BuildConfig.DEBUG)`")
-                    .replace()
-                    .text(sourceString)
-                    .shortenNames()
-                    .reformat(true)
-                    .with(buildConfigFix)
-                    .robot(true)
-                    .build()
-            )
-            .add(
-                fix().name("Surround with `if (Log.isLoggable(...)`")
-                    .replace()
-                    .text(sourceString)
-                    .shortenNames()
-                    .reformat(true)
-                    .with(isLoggableFix)
-                    .robot(true)
-                    .build()
-            )
-            .build()
+                .add(
+                        fix().name("Surround with `if (BuildConfig.DEBUG)`")
+                                .replace()
+                                .text(sourceString)
+                                .shortenNames()
+                                .reformat(true)
+                                .with(buildConfigFix)
+                                .robot(true)
+                                .build()
+                )
+                .add(
+                        fix().name("Surround with `if (Log.isLoggable(...)`")
+                                .replace()
+                                .text(sourceString)
+                                .shortenNames()
+                                .reformat(true)
+                                .with(isLoggableFix)
+                                .robot(true)
+                                .build()
+                )
+                .build()
     }
 
     private fun getLogLevel(methodName: String) = when (methodName) {
@@ -120,21 +120,21 @@ class LogDetector : Detector(), SourceCodeScanner {
 
     companion object {
         val issue = Issue.Companion.create(
-            "LogDebugConditional",
-            "Unconditional Logging calls",
-            "The BuildConfig class provides a constant, \"DEBUG\", " +
-                    "which indicates whether the code is being built in release mode or in debug " +
-                    "mode. In release mode, you typically want to strip out all the logging calls. " +
-                    "Since the compiler will automatically remove all code which is inside a " +
-                    "\"if (false)\" check, surrounding your logging calls with a check for " +
-                    "BuildConfig.DEBUG is a good idea.\n\n" +
-                    "If you *really* intend for the logging to be present in release mode, you can " +
-                    "suppress this warning with a @SuppressLint annotation for the intentional " +
-                    "logging calls.",
-            Category.PERFORMANCE,
-            5,
-            Severity.WARNING,
-            Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
+                "LogDebugConditional",
+                "Unconditional Logging calls",
+                "The BuildConfig class provides a constant, \"DEBUG\", " +
+                        "which indicates whether the code is being built in release mode or in debug " +
+                        "mode. In release mode, you typically want to strip out all the logging calls. " +
+                        "Since the compiler will automatically remove all code which is inside a " +
+                        "\"if (false)\" check, surrounding your logging calls with a check for " +
+                        "BuildConfig.DEBUG is a good idea.\n\n" +
+                        "If you *really* intend for the logging to be present in release mode, you can " +
+                        "suppress this warning with a @SuppressLint annotation for the intentional " +
+                        "logging calls.",
+                Category.PERFORMANCE,
+                5,
+                Severity.WARNING,
+                Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
 
         val issues = arrayOf(issue)

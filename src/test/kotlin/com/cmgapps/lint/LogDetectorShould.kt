@@ -27,30 +27,31 @@ class LogDetectorShould {
     fun `report missing if statement in java class`() {
         lint()
                 .files(java("""
+                    |import android.util.Log;
                     |public class Test {
                     |   public void test() {
-                    |       android.util.Log.d("TestTag", "Message");
+                    |       Log.d("TestTag", "Message");
                     |   }
                     |}""".trimMargin()))
                 .issues(*LogDetector.issues)
                 .run()
                 .expect("""
-                    |src/Test.java:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogConditional]
-                    |       android.util.Log.d("TestTag", "Message");
-                    |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    |src/Test.java:4: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
+                    |       Log.d("TestTag", "Message");
+                    |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     |0 errors, 1 warnings""".trimMargin())
                 .expectFixDiffs("""
                     |Fix for src/Test.java line 3: Surround with `if (BuildConfig.DEBUG)`:
-                    |@@ -3 +3
-                    |-        android.util.Log.d("TestTag", "Message");
+                    |@@ -4 +4
+                    |-        Log.d("TestTag", "Message");
                     |+        if (BuildConfig.DEBUG) {
-                    |+     android.util.Log.d("TestTag", "Message");
+                    |+     Log.d("TestTag", "Message");
                     |+ };
                     |Fix for src/Test.java line 3: Surround with `if (Log.isLoggable(...)`:
-                    |@@ -3 +3
-                    |-        android.util.Log.d("TestTag", "Message");
+                    |@@ -4 +4
+                    |-        Log.d("TestTag", "Message");
                     |+        if (Log.isLoggable(TAG, Log.DEBUG) {
-                    |+    android.util.Log.d("TestTag", "Message");
+                    |+    Log.d("TestTag", "Message");
                     |+ };
                 """.trimMargin())
     }
@@ -78,6 +79,22 @@ class LogDetectorShould {
                     |public class Test {
                     |   public void test() {
                     |       if (android.util.Log.isLoggable("Tag", Log.DEBUG)) {
+                    |           android.util.Log.d("TestTag", "Message");
+                    |       }
+                    |   }
+                    |}""".trimMargin()))
+                .issues(*LogDetector.issues)
+                .run()
+                .expect("No warnings.")
+    }
+
+    @Test
+    fun `report no errors if nested in Log isLoggable and BuildConfig DEBUG in java class`() {
+        lint()
+                .files(java("""
+                    |public class Test {
+                    |   public void test() {
+                    |       if ( android.util.Log.isLoggable("Tag", Log.DEBUG) || BuildConfig.DEBUG) {
                     |           android.util.Log.d("TestTag", "Message");
                     |       }
                     |   }
