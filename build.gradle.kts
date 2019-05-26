@@ -34,7 +34,7 @@ repositories {
 }
 
 group = "com.cmgapps.lint"
-version = "0.1-SNAPSHOT"
+version = "0.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
