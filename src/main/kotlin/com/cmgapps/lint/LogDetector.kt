@@ -82,14 +82,11 @@ class LogDetector : Detector(), SourceCodeScanner {
 
     private fun quickFix(node: UCallExpression, method: PsiMethod, evaluator: JavaEvaluator, context: JavaContext): LintFix {
         val isKotlin = isKotlin(node.sourcePsi)
-        val isLogCall = evaluator.isMemberInClass(method, LOG_CLS)
 
-        val sourceString: String
-
-        if (isKotlin) {
-            sourceString = node.uastParent!!.asSourceString()
+        val sourceString = if (isKotlin) {
+            node.uastParent!!.asSourceString()
         } else {
-            sourceString = "${node.asSourceString()};"
+            "${node.asSourceString()};"
         }
 
         val buildConfigFix = """
@@ -98,9 +95,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             |}
         """.trimMargin()
 
-
-        val toDelta = if (isKotlin) 0 else 1
-        val location = context.getRangeLocation(node.uastParent!!, 0, node, toDelta)
+        val location = context.getRangeLocation(node.uastParent!!, 0, node, if (isKotlin) 0 else 1)
 
         return fix().group().apply {
             add(
@@ -114,15 +109,16 @@ class LogDetector : Detector(), SourceCodeScanner {
                             .robot(true)
                             .build()
             )
-            if (isLogCall) {
+
+            if (evaluator.isMemberInClass(method, LOG_CLS)) {
                 val tag = node.valueArguments[0].asSourceString()
 
                 val isLoggableFix = """
-                            |if (Log.isLoggable($tag, ${getLogLevel(node.methodName!!)}) {
+                            |if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
                             |   $sourceString
                             |}""".trimMargin()
                 add(
-                        fix().name("Surround with `if (Log.isLoggable(...)`")
+                        fix().name("Surround with `if (Log.isLoggable(...))`")
                                 .replace()
                                 .range(location)
                                 .text(sourceString)
@@ -158,7 +154,7 @@ class LogDetector : Detector(), SourceCodeScanner {
                 id = "LogDebugConditional",
                 briefDescription = "Unconditional Logging calls",
                 explanation = """
-                    The BuildConfig class (available in Tools 17) provides a constant, "DEBUG", which indicates \
+                    The BuildConfig class provides a constant, "DEBUG", which indicates \
                     whether the code is being built in release mode or in debug mode. In release mode, you typically \
                     want to strip out all the logging calls. Since the compiler will automatically remove all code \
                     which is inside a "if (false)" check, surrounding your logging calls with a check for \

@@ -57,16 +57,16 @@ class LogDetectorShould {
                     |       ~~~~~~~~~~~~~~~~~~~~~
                     |0 errors, 1 warnings""".trimMargin())
                 .expectFixDiffs("""
-                    |Fix for src/Test.java line 3: Surround with `if (BuildConfig.DEBUG)`:
+                    |Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Log.d(TAG, "Message");
                     |+        if (BuildConfig.DEBUG) {
                     |+     Log.d(TAG, "Message");
                     |+ }
-                    |Fix for src/Test.java line 3: Surround with `if (Log.isLoggable(...)`:
+                    |Fix for src/Test.java line 4: Surround with `if (Log.isLoggable(...))`:
                     |@@ -4 +4
                     |-        Log.d(TAG, "Message");
-                    |+        if (Log.isLoggable(TAG, Log.DEBUG) {
+                    |+        if (android.util.Log.isLoggable(TAG, Log.DEBUG)) {
                     |+    Log.d(TAG, "Message");
                     |+ }
                 """.trimMargin())
@@ -128,10 +128,10 @@ class LogDetectorShould {
                     |+        if (BuildConfig.DEBUG) {
                     |+     android.util.Log.d("TestTag", "Message")
                     |+ }
-                    |Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...)`:
+                    |Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...))`:
                     |@@ -3 +3
                     |-        android.util.Log.d("TestTag", "Message")
-                    |+        if (Log.isLoggable("TestTag", Log.DEBUG) {
+                    |+        if (android.util.Log.isLoggable("TestTag", Log.DEBUG)) {
                     |+    android.util.Log.d("TestTag", "Message")
                     |+ }
                 """.trimMargin())
