@@ -90,7 +90,7 @@ class LogDetector : Detector(), SourceCodeScanner {
         }
 
         val buildConfigFix = """
-            |if (BuildConfig.DEBUG) {
+            |if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
             |    $sourceString
             |}
         """.trimMargin()

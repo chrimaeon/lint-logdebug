@@ -16,8 +16,7 @@
 
 package com.cmgapps.lint
 
-import com.android.tools.lint.checks.infrastructure.TestFiles.java
-import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.checks.infrastructure.TestFiles.*
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import org.junit.Ignore
 import org.junit.Test
@@ -39,10 +38,13 @@ class LogDetectorShould {
       |  }
       |}""".trimMargin())
 
+    private val manifestStub = manifest("<manifest package=\"com.cmgapps\"/>")
+
     @Test
     fun `report missing if statement in java class`() {
-        lint()
-                .files(java("""
+        lint().files(
+                manifestStub,
+                java("""
                     |import android.util.Log;
                     |public class Test {
                     |   public void test() {
@@ -60,7 +62,7 @@ class LogDetectorShould {
                     |Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Log.d(TAG, "Message");
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     Log.d(TAG, "Message");
                     |+ }
                     |Fix for src/Test.java line 4: Surround with `if (Log.isLoggable(...))`:
@@ -74,8 +76,8 @@ class LogDetectorShould {
 
     @Test
     fun `report no errors if nested in BuildConfig DEBUG in java class`() {
-        lint()
-                .files(java("""
+        lint().files(
+                java("""
                     |public class Test {
                     |   public void test() {
                     |       if (BuildConfig.DEBUG) {
@@ -90,8 +92,8 @@ class LogDetectorShould {
 
     @Test
     fun `report no errors if nested in Log#isLoggable in java class`() {
-        lint()
-                .files(java("""
+        lint().files(
+                java("""
                     |public class Test {
                     |   public void test() {
                     |       if (android.util.Log.isLoggable("TestTag", Log.DEBUG)) {
@@ -106,8 +108,9 @@ class LogDetectorShould {
 
     @Test
     fun `report missing if statement in kotlin class`() {
-        lint()
-                .files(kotlin("""
+        lint().files(
+                manifestStub,
+                kotlin("""
                     |class Test {
                     |   fun test() {
                     |       android.util.Log.d("TestTag", "Message")
@@ -125,7 +128,7 @@ class LogDetectorShould {
                     |Fix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -3 +3
                     |-        android.util.Log.d("TestTag", "Message")
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     android.util.Log.d("TestTag", "Message")
                     |+ }
                     |Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...))`:
@@ -139,8 +142,8 @@ class LogDetectorShould {
 
     @Test
     fun `report no errors if nested in BuildConfig DEBUG in kotlin class`() {
-        lint()
-                .files(kotlin("""
+        lint().files(
+                kotlin("""
                     |class Test {
                     |   fun test() {
                     |       if (BuildConfig.DEBUG) {
@@ -155,10 +158,8 @@ class LogDetectorShould {
 
     @Test
     fun `report no errors if nested in Log isLoggable in kotlin class`() {
-        lint()
-                .files(
-                        kotlin(
-                                """
+        lint().files(
+                kotlin("""
                     |class Test {
                     |   fun test() {
                     |       if (android.util.Log.isLoggable("TestTag", Log.DEBUG)) {
@@ -166,8 +167,8 @@ class LogDetectorShould {
                     |       }
                     |   }
                     |}""".trimMargin()
-                        )
                 )
+        )
                 .issues(*LogDetector.issues)
                 .run()
                 .expect("No warnings.")
@@ -177,6 +178,7 @@ class LogDetectorShould {
     fun `report errors if Timber in kotlin class`() {
         lint().files(
                 timberStub,
+                manifestStub,
                 kotlin("""
                     |import timber.log.Timber
                     |class Test {
@@ -193,7 +195,7 @@ class LogDetectorShould {
                 .expectFixDiffs("""Fix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Timber.d("Message")
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     Timber.d("Message")
                     |+ }""".trimMargin())
     }
@@ -202,6 +204,7 @@ class LogDetectorShould {
     fun `report errors if Timber in java class`() {
         lint().files(
                 timberStub,
+                manifestStub,
                 java("""
                     |import timber.log.Timber;
                     |public class Test {
@@ -221,7 +224,7 @@ class LogDetectorShould {
                     |Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Timber.d("Message");
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     Timber.d("Message");
                     |+ }""".trimMargin())
     }
@@ -230,6 +233,7 @@ class LogDetectorShould {
     fun `report errors if Timber in java class for verbose`() {
         lint().files(
                 timberStub,
+                manifestStub,
                 java("""
                     |import timber.log.Timber;
                     |public class Test {
@@ -249,7 +253,7 @@ class LogDetectorShould {
                     |Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Timber.v("Message");
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     Timber.v("Message");
                     |+ }""".trimMargin())
     }
@@ -258,6 +262,7 @@ class LogDetectorShould {
     fun `report errors if Timber in java class for verbose and tag`() {
         lint().files(
                 timberStub,
+                manifestStub,
                 java("""
                     |import timber.log.Timber;
                     |public class Test {
@@ -278,7 +283,7 @@ class LogDetectorShould {
                     |Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                     |@@ -4 +4
                     |-        Timber.tag("TestTag")
-                    |+        if (BuildConfig.DEBUG) {
+                    |+        if (com.cmgapps.BuildConfig.DEBUG) {
                     |+     Timber.tag("TestTag")
                     |@@ -6 +7
                     |+ }""".trimMargin())
@@ -289,6 +294,7 @@ class LogDetectorShould {
     fun `report errors if Timber in kotlin class for verbose and tag`() {
         lint().files(
                 timberStub,
+                manifestStub,
                 kotlin("""
                     |import timber.log.Timber
                     |class Test {
