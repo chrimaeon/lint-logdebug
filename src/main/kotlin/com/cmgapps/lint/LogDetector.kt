@@ -17,9 +17,27 @@
 package com.cmgapps.lint
 
 import com.android.tools.lint.client.api.JavaEvaluator
-import com.android.tools.lint.detector.api.*
+import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintFix
+import com.android.tools.lint.detector.api.Scope
+import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiMethod
-import org.jetbrains.uast.*
+import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UClass
+import org.jetbrains.uast.UClassInitializer
+import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.UField
+import org.jetbrains.uast.UIfExpression
+import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.USimpleNameReferenceExpression
 
 class LogDetector : Detector(), SourceCodeScanner {
 
@@ -32,7 +50,8 @@ class LogDetector : Detector(), SourceCodeScanner {
         val evaluator = context.evaluator
 
         if (!evaluator.isMemberInClass(method, LOG_CLS) && !evaluator.isMemberInClass(method, TIMBER_CLS) &&
-                !evaluator.isMemberInClass(method, TREE_CLS)) {
+            !evaluator.isMemberInClass(method, TREE_CLS)
+        ) {
             return
         }
 
@@ -41,8 +60,8 @@ class LogDetector : Detector(), SourceCodeScanner {
         if (!withinConditional) {
             val className = if (evaluator.isMemberInClass(method, LOG_CLS)) "Log" else "Timber"
             val message = "The log call $className.${node.methodName}(...) should be " +
-                    "conditional: surround with `if (Log.isLoggable(...))` or " +
-                    "`if (BuildConfig.DEBUG) { ... }`"
+                "conditional: surround with `if (Log.isLoggable(...))` or " +
+                "`if (BuildConfig.DEBUG) { ... }`"
             context.report(ISSUE, node, context.getLocation(node), message, quickFix(node, method, evaluator, context))
         }
     }
@@ -65,12 +84,11 @@ class LogDetector : Detector(), SourceCodeScanner {
                 if (condition is USimpleNameReferenceExpression && condition.identifier == DEBUG_MEMBER) {
                     return true
                 }
-
             } else if (curr is UCallExpression ||
-                    curr is UMethod ||
-                    curr is UClassInitializer ||
-                    curr is UField ||
-                    curr is UClass
+                curr is UMethod ||
+                curr is UClassInitializer ||
+                curr is UField ||
+                curr is UClass
             ) { // static block
                 break
             }
@@ -80,7 +98,12 @@ class LogDetector : Detector(), SourceCodeScanner {
         return false
     }
 
-    private fun quickFix(node: UCallExpression, method: PsiMethod, evaluator: JavaEvaluator, context: JavaContext): LintFix {
+    private fun quickFix(
+        node: UCallExpression,
+        method: PsiMethod,
+        evaluator: JavaEvaluator,
+        context: JavaContext
+    ): LintFix {
         val isKotlin = isKotlin(node.sourcePsi)
 
         val sourceString = if (isKotlin) {
@@ -99,15 +122,15 @@ class LogDetector : Detector(), SourceCodeScanner {
 
         return fix().group().apply {
             add(
-                    fix().name("Surround with `if (BuildConfig.DEBUG)`")
-                            .replace()
-                            .range(location)
-                            .text(sourceString)
-                            .shortenNames()
-                            .reformat(true)
-                            .with(buildConfigFix)
-                            .robot(true)
-                            .build()
+                fix().name("Surround with `if (BuildConfig.DEBUG)`")
+                    .replace()
+                    .range(location)
+                    .text(sourceString)
+                    .shortenNames()
+                    .reformat(true)
+                    .with(buildConfigFix)
+                    .robot(true)
+                    .build()
             )
 
             if (evaluator.isMemberInClass(method, LOG_CLS)) {
@@ -118,19 +141,19 @@ class LogDetector : Detector(), SourceCodeScanner {
                             |   $sourceString
                             |}""".trimMargin()
                 add(
-                        fix().name("Surround with `if (Log.isLoggable(...))`")
-                                .replace()
-                                .range(location)
-                                .text(sourceString)
-                                .shortenNames()
-                                .reformat(true)
-                                .with(isLoggableFix)
-                                .robot(true)
-                                .build()
+                    fix().name("Surround with `if (Log.isLoggable(...))`")
+                        .replace()
+                        .range(location)
+                        .text(sourceString)
+                        .shortenNames()
+                        .reformat(true)
+                        .with(isLoggableFix)
+                        .robot(true)
+                        .build()
                 )
             }
         }
-                .build()
+            .build()
     }
 
     private fun getLogLevel(methodName: String) = when (methodName) {
@@ -148,12 +171,11 @@ class LogDetector : Detector(), SourceCodeScanner {
         return last
     }
 
-
     companion object {
         private val ISSUE = Issue.Companion.create(
-                id = "LogDebugConditional",
-                briefDescription = "Unconditional Logging calls",
-                explanation = """
+            id = "LogDebugConditional",
+            briefDescription = "Unconditional Logging calls",
+            explanation = """
                     The BuildConfig class provides a constant, "DEBUG", which indicates \
                     whether the code is being built in release mode or in debug mode. In release mode, you typically \
                     want to strip out all the logging calls. Since the compiler will automatically remove all code \
@@ -162,11 +184,11 @@ class LogDetector : Detector(), SourceCodeScanner {
 
                     If you **really** intend for the logging to be present in release mode, you can suppress this \
                     warning with a @SuppressLint annotation for the intentional logging calls.""",
-                category = Category.PERFORMANCE,
-                priority = 5,
-                severity = Severity.WARNING,
-                androidSpecific = true,
-                implementation = Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            category = Category.PERFORMANCE,
+            priority = 5,
+            severity = Severity.WARNING,
+            androidSpecific = true,
+            implementation = Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
 
         val issues = arrayOf(ISSUE)

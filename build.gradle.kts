@@ -17,13 +17,13 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.FileInputStream
 import java.util.Date
 import java.util.Properties
 
 plugins {
     `java-library`
     `maven-publish`
+    jacoco
     kotlin("jvm") version "1.3.61"
     kotlin("kapt") version "1.3.61"
     id("com.github.ben-manes.versions") version "0.27.0"
@@ -34,6 +34,8 @@ repositories {
     google()
     jcenter()
 }
+
+val ktlint: Configuration by configurations.creating
 
 group = "com.cmgapps.lint"
 version = "0.2"
@@ -102,12 +104,19 @@ publishing {
 }
 
 bintray {
-    val credentialProps = Properties().apply {
-        load(FileInputStream(file("${project.rootDir}/credentials.properties")))
-    }
+    val propsFile = file("${project.rootDir}/credentials.properties")
 
-    user = credentialProps.getProperty("user")
-    key = credentialProps.getProperty("key")
+    if (propsFile.exists()) {
+        Properties().apply {
+            load(propsFile.inputStream())
+        }.let {
+            user = it.getProperty("user")
+            key = it.getProperty("key")
+        }
+    } else {
+        user = System.getenv("BINTRAY_USER")
+        key = System.getenv("BINTRAY_KEY")
+    }
 
     setPublications(mavenPublicationName)
 
@@ -153,8 +162,30 @@ tasks {
         }
     }
 
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                limit {
+                    counter = "INSTRUCTION"
+                    minimum = "0.8".toBigDecimal()
+                }
+            }
+        }
+    }
+
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    val ktlintCheck by registering(JavaExec::class) {
+        description = "Check Kotlin code style."
+        main = "com.pinterest.ktlint.Main"
+        classpath = ktlint
+        args = listOf("src/**/*.kt", "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml")
+    }
+
+    check {
+        dependsOn(ktlintCheck)
     }
 
     wrapper {
@@ -172,6 +203,8 @@ dependencies {
     // use annotationProcessor only once artifact is fixed
     compileOnly("com.google.auto.service:auto-service:1.0-rc6")
     kapt("com.google.auto.service:auto-service:1.0-rc6")
+
+    ktlint("com.pinterest:ktlint:0.35.0")
 
     testImplementation("junit:junit:4.13")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
