@@ -323,6 +323,80 @@ class LogDetectorShould {
                 import timber.log.Timber;
                 public class Test {
                    public void test() {
+                       Timber.tag("TestTag").v("Message");
+                   }
+                }
+                """
+            ).indented()
+        ).issues(*LogDetector.issues)
+            .run()
+            .expect(
+                """
+                src/Test.java:4: Warning: The log call Timber.v(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
+                       Timber.tag("TestTag").v("Message");
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                @@ -4 +4
+                -        Timber.tag("TestTag").v("Message");
+                +        if (com.cmgapps.BuildConfig.DEBUG) {
+                +     Timber.tag("TestTag").v("Message");
+                + }
+                """
+            )
+    }
+
+    @Test
+    fun `report errors if Timber in kotlin class for verbose and tag`() {
+        lint().files(
+            timberStub,
+            manifestStub,
+            kotlin(
+                """
+                import timber.log.Timber
+                class Test {
+                   fun test() {
+                       Timber.tag("TestTag").v("Message")
+                   }
+                }
+                """
+            ).indented()
+        ).issues(*LogDetector.issues)
+            .run()
+            .expect(
+                """
+                src/Test.kt:4: Warning: The log call Timber.v(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
+                       Timber.tag("TestTag").v("Message")
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
+                @@ -4 +4
+                -        Timber.tag("TestTag").v("Message")
+                +        if (com.cmgapps.BuildConfig.DEBUG) {
+                +     Timber.tag("TestTag").v("Message")
+                + }
+                """
+            )
+    }
+
+    @Test
+    fun `report errors if Timber in java class for verbose and tag with new line`() {
+        lint().files(
+            timberStub,
+            manifestStub,
+            java(
+                """
+                import timber.log.Timber;
+                public class Test {
+                   public void test() {
                        Timber.tag("TestTag")
                            .v("Message");
                    }
@@ -352,9 +426,9 @@ class LogDetectorShould {
             )
     }
 
-    @Ignore("Quick fix not working for kotlin with new line")
+    @Ignore("Quick fix not working for kotlin")
     @Test
-    fun `report errors if Timber in kotlin class for verbose and tag`() {
+    fun `report errors if Timber in kotlin class for verbose and tag with new line`() {
         lint().files(
             timberStub,
             manifestStub,
