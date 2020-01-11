@@ -18,13 +18,15 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
-import java.util.*
+import java.util.Date
+import java.util.Properties
 
 plugins {
     `java-library`
     `maven-publish`
-    kotlin("jvm") version "1.3.31"
-    id("com.github.ben-manes.versions") version "0.21.0"
+    kotlin("jvm") version "1.3.61"
+    kotlin("kapt") version "1.3.61"
+    id("com.github.ben-manes.versions") version "0.27.0"
     id("com.jfrog.bintray") version "1.8.4"
 }
 
@@ -129,46 +131,49 @@ bintray {
 tasks {
     named<DependencyUpdatesTask>("dependencyUpdates") {
         revision = "release"
-        resolutionStrategy {
-            componentSelection {
-                all {
-                    listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
-                            .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
-                            .any { it.matches(candidate.version) }
-                            .let {
-                                if (it) {
-                                    reject("Release candidate")
-                                }
-                            }
-                }
+        rejectVersionIf {
+            listOf("alpha", "beta", "rc", "cr", "m").any { qualifier ->
+                """(?i).*[.-]$qualifier[.\d-]*""".toRegex()
+                    .containsMatchIn(candidate.version)
             }
         }
     }
 
     named<Jar>("jar") {
         manifest {
-            attributes("Implementation-Title" to pomName,
-                    "Implementation-Version" to project.version.toString(),
-                    "Built-By" to System.getProperty("user.name"),
-                    "Built-Date" to Date(),
-                    "Built-JDK" to System.getProperty("java.version"),
-                    "Built-Gradle" to gradle.gradleVersion,
-                    "Lint-Registry-v2" to "com.cmgapps.lint.DebugLogIssueRegistry")
+            attributes(
+                "Implementation-Title" to pomName,
+                "Implementation-Version" to project.version.toString(),
+                "Built-By" to System.getProperty("user.name"),
+                "Built-Date" to Date(),
+                "Built-JDK" to System.getProperty("java.version"),
+                "Built-Gradle" to gradle.gradleVersion,
+                "Lint-Registry-v2" to "com.cmgapps.lint.DebugLogIssueRegistry"
+            )
         }
     }
 
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
     }
+
+    wrapper {
+        distributionType = Wrapper.DistributionType.ALL
+        gradleVersion = "6.0.1"
+    }
 }
 
-val lintVersion = "26.4.1"
+val lintVersion = "26.5.3"
 
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
     compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
 
-    testImplementation("junit:junit:4.12")
+    // use annotationProcessor only once artifact is fixed
+    compileOnly("com.google.auto.service:auto-service:1.0-rc6")
+    kapt("com.google.auto.service:auto-service:1.0-rc6")
+
+    testImplementation("junit:junit:4.13")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
     testImplementation("com.android.tools.lint:lint-tests:$lintVersion")
     testImplementation("com.android.tools:testutils:$lintVersion")
