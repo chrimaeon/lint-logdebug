@@ -1,0 +1,89 @@
+version: 2.1
+
+executors:
+  android-executor:
+    docker:
+      - image: circleci/android:api-29
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.workers.max=2 -Dkotlin.compiler.execution.strategy=in-process -Dkotlin.incremental=false"
+      TERM: dumb
+
+commands:
+  restore_gradle_wrapper:
+    description: "Restores Gradle Wrapper from cache"
+    steps:
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+  restore_gradle_cache:
+    description: "Restores Gradle Cache from cache"
+    steps:
+      - restore_cache:
+          key: v1-gradle-cache-{{ checksum "build.gradle.kts" }}
+  save_gradle_wrapper:
+    description: "Save Gradle Wrapper to cache"
+    steps:
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+  save_gradle_cache:
+    description: "Save Gradle Cache to cache"
+    steps:
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-cache-{{ checksum "build.gradle.kts" }}
+
+jobs:
+  test:
+    executor: android-executor
+    steps:
+      - checkout
+      - restore_gradle_wrapper
+      - restore_gradle_cache
+      - run:
+          name: Test
+          command: ./gradlew check jacocoTestReport jacocoTestCoverageVerification
+      - save_gradle_wrapper
+      - save_gradle_cache
+      - store_test_results:
+          path: build/test-results/test
+      - store_artifacts:
+          path: build/reports
+          when: always
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build
+            - ./**/build
+  deploy:
+    executor: android-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_gradle_wrapper
+      - restore_gradle_cache
+      - run:
+          name: Deploy to Bintray
+          command: ./gradlew :bintrayUpload
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
+      - hold:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - hold
+          filters:
+            branches:
+              only: master
