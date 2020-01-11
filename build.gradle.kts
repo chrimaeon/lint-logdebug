@@ -15,6 +15,7 @@
  */
 
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import com.github.benmanes.gradle.versions.updates.gradle.GradleReleaseChannel
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
@@ -138,8 +139,9 @@ bintray {
 }
 
 tasks {
-    named<DependencyUpdatesTask>("dependencyUpdates") {
+    withType(DependencyUpdatesTask::class) {
         revision = "release"
+        gradleReleaseChannel = GradleReleaseChannel.CURRENT.id
         rejectVersionIf {
             listOf("alpha", "beta", "rc", "cr", "m").any { qualifier ->
                 """(?i).*[.-]$qualifier[.\d-]*""".toRegex()
