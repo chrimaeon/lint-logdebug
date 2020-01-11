@@ -177,15 +177,22 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    val ktlintCheck by registering(JavaExec::class) {
+    val ktlint by registering(JavaExec::class) {
+        group = "Verification"
         description = "Check Kotlin code style."
         main = "com.pinterest.ktlint.Main"
         classpath = ktlint
-        args = listOf("src/**/*.kt", "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml")
+        args = listOf("src/**/*.kt", "--reporter=plain", "--reporter=html,output=${buildDir}/reports/ktlint.html")
+    }
+
+    withType<Test> {
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
     }
 
     check {
-        dependsOn(ktlintCheck)
+        dependsOn(ktlint)
     }
 
     wrapper {
@@ -204,7 +211,7 @@ dependencies {
     compileOnly("com.google.auto.service:auto-service:1.0-rc6")
     kapt("com.google.auto.service:auto-service:1.0-rc6")
 
-    ktlint("com.pinterest:ktlint:0.35.0")
+    ktlint("com.pinterest:ktlint:0.36.0")
 
     testImplementation("junit:junit:4.13")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
