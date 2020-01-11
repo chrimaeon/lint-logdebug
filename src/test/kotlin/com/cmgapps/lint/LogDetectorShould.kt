@@ -134,7 +134,7 @@ class LogDetectorShould {
                 """
                 class Test {
                     fun test() {
-                        android.util.Log.d("TestTag", "Message")
+                        android.util.Log.v("TestTag", "Message")
                     }
                 }
                 """
@@ -143,8 +143,8 @@ class LogDetectorShould {
             .run()
             .expect(
                 """
-                src/Test.kt:3: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
-                        android.util.Log.d("TestTag", "Message")
+                src/Test.kt:3: Warning: The log call Log.v(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
+                        android.util.Log.v("TestTag", "Message")
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
@@ -153,15 +153,15 @@ class LogDetectorShould {
                 """
                 Fix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -3 +3
-                -         android.util.Log.d("TestTag", "Message")
+                -         android.util.Log.v("TestTag", "Message")
                 +         if (com.cmgapps.BuildConfig.DEBUG) {
-                +     android.util.Log.d("TestTag", "Message")
+                +     android.util.Log.v("TestTag", "Message")
                 + }
                 Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...))`:
                 @@ -3 +3
-                -         android.util.Log.d("TestTag", "Message")
-                +         if (android.util.Log.isLoggable("TestTag", Log.DEBUG)) {
-                +    android.util.Log.d("TestTag", "Message")
+                -         android.util.Log.v("TestTag", "Message")
+                +         if (android.util.Log.isLoggable("TestTag", Log.VERBOSE)) {
+                +    android.util.Log.v("TestTag", "Message")
                 + }
                 """
             )
@@ -175,7 +175,7 @@ class LogDetectorShould {
                 class Test {
                    fun test() {
                        if (BuildConfig.DEBUG) {
-                           android.util.Log.d("TestTag", "Message")
+                           android.util.Log.v("TestTag", "Message")
                        }
                    }
                 }"""
@@ -464,5 +464,29 @@ class LogDetectorShould {
                 + }
                 """
             )
+    }
+
+    @Test
+    fun `not check "d" method from unknown class`() {
+        lint().files(
+            kotlin(
+                """
+                class CustomClass {
+                    fun d(text: String) {
+                        println(text)
+                    }
+                }
+                
+                class OtherClass {
+                    fun callD() {
+                        val test = CustomClass()
+                        test.d("Test")
+                    }
+                }
+                """
+            ).indented()
+        ).issues(*LogDetector.issues)
+            .run()
+            .expect("No warnings.")
     }
 }

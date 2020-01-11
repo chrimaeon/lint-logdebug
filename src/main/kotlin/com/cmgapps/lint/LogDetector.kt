@@ -49,7 +49,8 @@ class LogDetector : Detector(), SourceCodeScanner {
 
         val evaluator = context.evaluator
 
-        if (!evaluator.isMemberInClass(method, LOG_CLS) && !evaluator.isMemberInClass(method, TIMBER_CLS) &&
+        if (!evaluator.isMemberInClass(method, LOG_CLS) &&
+            !evaluator.isMemberInClass(method, TIMBER_CLS) &&
             !evaluator.isMemberInClass(method, TREE_CLS)
         ) {
             return
@@ -67,9 +68,12 @@ class LogDetector : Detector(), SourceCodeScanner {
     }
 
     private fun checkWithinConditional(start: UElement?): Boolean {
-        var curr = if (isKotlin(start?.sourcePsi)) start?.uastParent else start
-        while (curr != null) {
+        if (start == null) {
+            return false
+        }
 
+        var curr = if (isKotlin(start.sourcePsi)) start.uastParent else start
+        while (curr != null) {
             if (curr is UIfExpression) {
                 var condition = curr.condition
 
@@ -152,8 +156,7 @@ class LogDetector : Detector(), SourceCodeScanner {
                         .build()
                 )
             }
-        }
-            .build()
+        }.build()
     }
 
     private fun getLogLevel(methodName: String) = when (methodName) {
@@ -172,7 +175,7 @@ class LogDetector : Detector(), SourceCodeScanner {
     }
 
     companion object {
-        private val ISSUE = Issue.Companion.create(
+        private val ISSUE = Issue.create(
             id = "LogDebugConditional",
             briefDescription = "Unconditional Logging calls",
             explanation = """

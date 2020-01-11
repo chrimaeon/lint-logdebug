@@ -214,6 +214,7 @@ dependencies {
     ktlint("com.pinterest:ktlint:0.36.0")
 
     testImplementation("junit:junit:4.13")
+    testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
     testImplementation("com.android.tools.lint:lint-tests:$lintVersion")
     testImplementation("com.android.tools:testutils:$lintVersion")

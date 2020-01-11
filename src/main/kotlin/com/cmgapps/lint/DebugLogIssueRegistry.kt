@@ -24,5 +24,4 @@ import com.google.auto.service.AutoService
 class DebugLogIssueRegistry : IssueRegistry() {
     override val issues = LogDetector.issues.asList()
     override val api = CURRENT_API
-    override val minApi = 4
 }
