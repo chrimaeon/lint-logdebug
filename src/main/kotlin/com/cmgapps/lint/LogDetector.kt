@@ -118,9 +118,11 @@ class LogDetector : Detector(), SourceCodeScanner {
         }
 
         val buildConfigFix =
-            """if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
+            """
+            if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
                 $sourceString
             }"""
+                .trimIndent()
 
         val location = context.getRangeLocation(node.uastParent!!, 0, node, if (isKotlin) 0 else 1)
 
@@ -141,9 +143,11 @@ class LogDetector : Detector(), SourceCodeScanner {
                 val tag = node.valueArguments[0].asSourceString()
 
                 val isLoggableFix =
-                    """if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
+                    """
+                    if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
                         $sourceString
                     }"""
+                        .trimIndent()
                 add(
                     fix().name("Surround with `if (Log.isLoggable(...))`")
                         .replace()
@@ -179,7 +183,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             id = "LogDebugConditional",
             briefDescription = "Unconditional Logging calls",
             explanation =
-            """
+                """
                 The BuildConfig class provides a constant, "DEBUG", which indicates \
                 whether the code is being built in release mode or in debug mode. In release mode, you typically \
                 want to strip out all the logging calls. Since the compiler will automatically remove all code \
@@ -187,7 +191,8 @@ class LogDetector : Detector(), SourceCodeScanner {
                 BuildConfig.DEBUG is a good idea.
 
                 If you **really** intend for the logging to be present in release mode, you can suppress this \
-                warning with a @SuppressLint annotation for the intentional logging calls.""",
+                warning with a @SuppressLint annotation for the intentional logging calls.
+                """.trimIndent(),
             category = Category.PERFORMANCE,
             priority = 5,
             severity = Severity.WARNING,
