@@ -39,6 +39,7 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 
+@Suppress("UnstableApiUsage")
 class LogDetector : Detector(), SourceCodeScanner {
 
     override fun getApplicableMethodNames(): List<String>? {
@@ -116,11 +117,12 @@ class LogDetector : Detector(), SourceCodeScanner {
             "${node.asSourceString()};"
         }
 
-        val buildConfigFix = """
-            |if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
-            |    $sourceString
-            |}
-        """.trimMargin()
+        val buildConfigFix =
+            """
+            if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
+                $sourceString
+            }"""
+                .trimIndent()
 
         val location = context.getRangeLocation(node.uastParent!!, 0, node, if (isKotlin) 0 else 1)
 
@@ -140,10 +142,12 @@ class LogDetector : Detector(), SourceCodeScanner {
             if (evaluator.isMemberInClass(method, LOG_CLS)) {
                 val tag = node.valueArguments[0].asSourceString()
 
-                val isLoggableFix = """
-                            |if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
-                            |   $sourceString
-                            |}""".trimMargin()
+                val isLoggableFix =
+                    """
+                    if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
+                        $sourceString
+                    }"""
+                        .trimIndent()
                 add(
                     fix().name("Surround with `if (Log.isLoggable(...))`")
                         .replace()
@@ -178,15 +182,17 @@ class LogDetector : Detector(), SourceCodeScanner {
         private val ISSUE = Issue.create(
             id = "LogDebugConditional",
             briefDescription = "Unconditional Logging calls",
-            explanation = """
-                    The BuildConfig class provides a constant, "DEBUG", which indicates \
-                    whether the code is being built in release mode or in debug mode. In release mode, you typically \
-                    want to strip out all the logging calls. Since the compiler will automatically remove all code \
-                    which is inside a "if (false)" check, surrounding your logging calls with a check for \
-                    BuildConfig.DEBUG is a good idea.
+            explanation =
+                """
+                The BuildConfig class provides a constant, "DEBUG", which indicates \
+                whether the code is being built in release mode or in debug mode. In release mode, you typically \
+                want to strip out all the logging calls. Since the compiler will automatically remove all code \
+                which is inside a "if (false)" check, surrounding your logging calls with a check for \
+                BuildConfig.DEBUG is a good idea.
 
-                    If you **really** intend for the logging to be present in release mode, you can suppress this \
-                    warning with a @SuppressLint annotation for the intentional logging calls.""",
+                If you **really** intend for the logging to be present in release mode, you can suppress this \
+                warning with a @SuppressLint annotation for the intentional logging calls.
+                """.trimIndent(),
             category = Category.PERFORMANCE,
             priority = 5,
             severity = Severity.WARNING,

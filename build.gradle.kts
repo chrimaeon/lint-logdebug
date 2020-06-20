@@ -25,10 +25,10 @@ plugins {
     `java-library`
     `maven-publish`
     jacoco
-    kotlin("jvm") version "1.3.61"
-    kotlin("kapt") version "1.3.61"
-    id("com.github.ben-manes.versions") version "0.27.0"
-    id("com.jfrog.bintray") version "1.8.4"
+    kotlin("jvm") version "1.3.72"
+    kotlin("kapt") version "1.3.72"
+    id("com.github.ben-manes.versions") version "0.28.0"
+    id("com.jfrog.bintray") version "1.8.5"
 }
 
 repositories {
@@ -39,7 +39,7 @@ repositories {
 val ktlint: Configuration by configurations.creating
 
 group = "com.cmgapps.lint"
-version = "0.3"
+version = "0.4"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -199,21 +199,21 @@ tasks {
 
     wrapper {
         distributionType = Wrapper.DistributionType.ALL
-        gradleVersion = "6.0.1"
+        gradleVersion = "6.5"
     }
 }
 
-val lintVersion = "26.5.3"
+val lintVersion = "27.0.0"
 
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
     compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
 
     // use annotationProcessor only once artifact is fixed
-    compileOnly("com.google.auto.service:auto-service:1.0-rc6")
-    kapt("com.google.auto.service:auto-service:1.0-rc6")
+    compileOnly("com.google.auto.service:auto-service:1.0-rc7")
+    kapt("com.google.auto.service:auto-service:1.0-rc7")
 
-    ktlint("com.pinterest:ktlint:0.36.0")
+    ktlint("com.pinterest:ktlint:0.37.2")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.hamcrest:hamcrest:2.2")
