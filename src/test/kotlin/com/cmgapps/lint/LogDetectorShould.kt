@@ -81,8 +81,8 @@ class LogDetectorShould {
                 Fix for src/Test.java line 4: Surround with `if (Log.isLoggable(...))`:
                 @@ -4 +4
                 -        Log.d(TAG, "Message");
-                +        if (android.util.Log.isLoggable(TAG, Log.DEBUG)) {
-                +    Log.d(TAG, "Message");
+                +        if (Log.isLoggable(TAG, Log.DEBUG)) {
+                +     Log.d(TAG, "Message");
                 + }
                 """
             )
@@ -161,7 +161,7 @@ class LogDetectorShould {
                 @@ -3 +3
                 -         android.util.Log.v("TestTag", "Message")
                 +         if (android.util.Log.isLoggable("TestTag", Log.VERBOSE)) {
-                +    android.util.Log.v("TestTag", "Message")
+                +     android.util.Log.v("TestTag", "Message")
                 + }
                 """
             )
@@ -418,10 +418,11 @@ class LogDetectorShould {
                 Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.tag("TestTag")
-                +        if (com.cmgapps.BuildConfig.DEBUG) {
-                +     Timber.tag("TestTag")
-                @@ -6 +7
-                + }
+                -            .v("Message");
+                +         if (com.cmgapps.BuildConfig.DEBUG) {
+                +      Timber.tag("TestTag")
+                + .v("Message");
+                +  }
                 """
             )
     }
