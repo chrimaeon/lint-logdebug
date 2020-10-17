@@ -21,6 +21,17 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 import java.util.Properties
 
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:4.1.0")
+    }
+}
+
 plugins {
     `java-library`
     `maven-publish`
@@ -30,6 +41,8 @@ plugins {
     id("com.github.ben-manes.versions") version "0.33.0"
     id("com.jfrog.bintray") version "1.8.5"
 }
+
+apply(plugin = "com.android.lint")
 
 repositories {
     google()
