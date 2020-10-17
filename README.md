@@ -19,7 +19,7 @@ Add this to your dependencies in the modules `build.gradle`
 
 ```kotlin
 dependencies {
-    lintChecks("com.cmgapps.lint:lint-log:0.5")
+    lintChecks("com.cmgapps.lint:lint-log:0.5.1")
 }
 ```
 For the latest version, please check [Bintray](https://bintray.com/chrimaeon/maven/com.cmgapps.lint%3Alint-log/_latestVersion)
