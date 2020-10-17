@@ -25,9 +25,9 @@ plugins {
     `java-library`
     `maven-publish`
     jacoco
-    kotlin("jvm") version "1.3.72"
-    kotlin("kapt") version "1.3.72"
-    id("com.github.ben-manes.versions") version "0.28.0"
+    kotlin("jvm") version "1.4.10"
+    kotlin("kapt") version "1.4.10"
+    id("com.github.ben-manes.versions") version "0.33.0"
     id("com.jfrog.bintray") version "1.8.5"
 }
 
@@ -39,7 +39,7 @@ repositories {
 val ktlint: Configuration by configurations.creating
 
 group = "com.cmgapps.lint"
-version = "0.4"
+version = "0.5"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -199,11 +199,11 @@ tasks {
 
     wrapper {
         distributionType = Wrapper.DistributionType.ALL
-        gradleVersion = "6.5"
+        gradleVersion = "6.7"
     }
 }
 
-val lintVersion = "27.0.0"
+val lintVersion = "27.1.0"
 
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
@@ -213,9 +213,9 @@ dependencies {
     compileOnly("com.google.auto.service:auto-service:1.0-rc7")
     kapt("com.google.auto.service:auto-service:1.0-rc7")
 
-    ktlint("com.pinterest:ktlint:0.37.2")
+    ktlint("com.pinterest:ktlint:0.39.0")
 
-    testImplementation("junit:junit:4.13")
+    testImplementation("junit:junit:4.13.1")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
     testImplementation("com.android.tools.lint:lint-tests:$lintVersion")

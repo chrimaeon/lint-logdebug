@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package com.cmgapps.lint
 
 import com.android.tools.lint.client.api.IssueRegistry
