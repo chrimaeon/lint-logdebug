@@ -52,7 +52,7 @@ repositories {
 val ktlint: Configuration by configurations.creating
 
 group = "com.cmgapps.lint"
-version = "0.5"
+version = "0.5.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
