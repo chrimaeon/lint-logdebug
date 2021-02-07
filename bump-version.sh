@@ -18,7 +18,7 @@ update_version() {
 }
 
 update_version "README.md"
-update_version "build.gradle.kts"
+update_version "gradle.properties"
 
-git add README.md build.gradle.kts
+git add README.md gradle.properties
 git commit -m "bump version number"

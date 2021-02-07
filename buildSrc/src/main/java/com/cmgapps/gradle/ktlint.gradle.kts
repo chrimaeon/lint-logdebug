@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Christian Grach <christian.grach@cmgapps.com>
+ * Copyright (c) 2020. Christian Grach <christian.grach@cmgapps.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-rootProject.name = "lint-logdebug"
+package com.cmgapps.gradle
 
-include(
-    ":checks",
-    "library"
-)
+import com.cmgapps.gradle.ktlint.configureKtlint
+
+configureKtlint()

@@ -468,7 +468,7 @@ class LogDetectorShould {
     }
 
     @Test
-    fun `not check "d" method from unknown class`() {
+    fun `not check 'd' method from unknown class`() {
         lint().files(
             kotlin(
                 """
