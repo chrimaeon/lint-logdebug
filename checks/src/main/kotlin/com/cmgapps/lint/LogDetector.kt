@@ -42,9 +42,7 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 @Suppress("UnstableApiUsage")
 class LogDetector : Detector(), SourceCodeScanner {
 
-    override fun getApplicableMethodNames(): List<String>? {
-        return listOf("d", "v")
-    }
+    override fun getApplicableMethodNames(): List<String> = listOf("d", "v")
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
 
@@ -182,8 +180,7 @@ class LogDetector : Detector(), SourceCodeScanner {
         private val ISSUE = Issue.create(
             id = "LogDebugConditional",
             briefDescription = "Unconditional Logging calls",
-            explanation =
-                """
+            explanation = """
                 The BuildConfig class provides a constant, "DEBUG", which indicates \
                 whether the code is being built in release mode or in debug mode. In release mode, you typically \
                 want to strip out all the logging calls. Since the compiler will automatically remove all code \
@@ -192,7 +189,7 @@ class LogDetector : Detector(), SourceCodeScanner {
 
                 If you **really** intend for the logging to be present in release mode, you can suppress this \
                 warning with a @SuppressLint annotation for the intentional logging calls.
-                """.trimIndent(),
+            """.trimIndent(),
             category = Category.PERFORMANCE,
             priority = 5,
             severity = Severity.WARNING,
