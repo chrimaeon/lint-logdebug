@@ -51,9 +51,9 @@ jobs:
       - save_gradle_wrapper
       - save_gradle_cache
       - store_test_results:
-          path: build/test-results/test
+          path: checks/build/test-results/test
       - store_artifacts:
-          path: build/reports
+          path: checks/build/reports
           when: always
       - persist_to_workspace:
           root: .
@@ -63,7 +63,7 @@ jobs:
 
 workflows:
   version: 2
-  test_and_deploy:
+  test:
     jobs:
       - test:
           context:
