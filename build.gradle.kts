@@ -23,12 +23,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:4.1.2")
+        classpath("com.android.tools.build:gradle:" + Version.ANDROID_GRADLE_PLUGIN)
     }
 }
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.36.0"
+    id("com.github.ben-manes.versions") version Version.VERSIONS_PLUGIN
 }
 
 allprojects {
