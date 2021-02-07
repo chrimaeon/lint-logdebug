@@ -81,6 +81,9 @@ dependencies {
     compileOnly(Deps.AUTO_SERVICE_ANNOTATIONS)
     kapt(Deps.AUTO_SERVICE)
 
+    // Necessary to bump a transitive dependency.
+    testImplementation(kotlin("reflect", Version.KOTLIN))
+
     testImplementation(Deps.JUNIT)
     testImplementation(Deps.HAMCREST)
     testImplementation(Deps.LINT)
