@@ -115,9 +115,11 @@ class LogDetector : Detector(), SourceCodeScanner {
             "${node.asSourceString()};"
         }
 
+        val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
+
         val buildConfigFix =
             """
-            if (${context.mainProject.`package`}.BuildConfig.DEBUG) {
+            if (${project.`package`}.BuildConfig.DEBUG) {
                 $sourceString
             }"""
                 .trimIndent()

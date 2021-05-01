@@ -16,7 +16,9 @@
 
 package com.cmgapps.lint
 
+import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.detector.api.CURRENT_API
+import com.android.tools.lint.detector.api.TextFormat
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.contains
@@ -30,6 +32,7 @@ class DebugLogIssueRegistryShould {
 
     @Before
     fun setUp() {
+        lint()
         registry = DebugLogIssueRegistry()
     }
 
@@ -41,5 +44,21 @@ class DebugLogIssueRegistryShould {
     @Test
     fun `set the api to CURRENT_API`() {
         assertThat(registry.api, `is`(CURRENT_API))
+    }
+
+    @Test
+    fun `set vendor`() {
+        assertThat(
+            registry.vendor.describe(TextFormat.TEXT),
+            `is`(
+                """
+                    |Vendor: CMG Mobile Apps
+                    |Identifier: lint-logdebug
+                    |Contact: https://github.com/chrimaeon/lint-logdebug/issues
+                    |Feedback: https://github.com/chrimaeon/lint-logdebug/issues
+                    |
+                """.trimMargin()
+            )
+        )
     }
 }
