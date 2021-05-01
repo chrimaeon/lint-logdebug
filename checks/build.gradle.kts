@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import java.util.Date
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Date
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.div
 
 plugins {
     kotlin("jvm") version Version.KOTLIN
@@ -25,12 +27,50 @@ plugins {
     id("org.jetbrains.dokka") version Version.DOKKA_PLUGIN
 }
 
+@OptIn(ExperimentalPathApi::class)
+val buildConfigDirPath = buildDir.toPath() / "generated" / "source" / "buildConfig"
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+sourceSets {
+    main {
+        java.srcDir(buildConfigDirPath)
+    }
+}
+
 tasks {
+    val generateBuildConfig by registering {
+        val outputDir = buildConfigDirPath
+
+        val projectArtifactId: String by project
+        inputs.property("projectArtifactId", projectArtifactId)
+
+        val feedbackUrl: String by project
+        inputs.property("feedbackUrl", feedbackUrl)
+
+        outputs.dir(outputDir)
+
+        doLast {
+            outputDir.toFile().mkdirs()
+            val packageName = "com.cmgapps.lint"
+            file(outputDir.resolve("BuildConfig.kt")).bufferedWriter().use {
+                it.write(
+                    """
+                        |package $packageName
+                        |const val FEEDBACK_URL = "$feedbackUrl"
+                        |const val PROJECT_ARTIFACT = "$projectArtifactId"
+                    """.trimMargin()
+                )
+            }
+        }
+    }
+
+    withType<KotlinCompile> {
+        dependsOn(generateBuildConfig)
+    }
 
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"

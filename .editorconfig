@@ -8,7 +8,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 [*.{kt,kts}]
-kotlin_imports_layout = idea
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
 
 [*.yml]
 indent_size = 2

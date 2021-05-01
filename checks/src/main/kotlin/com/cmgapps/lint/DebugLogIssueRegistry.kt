@@ -19,11 +19,18 @@
 package com.cmgapps.lint
 
 import com.android.tools.lint.client.api.IssueRegistry
+import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.CURRENT_API
 import com.google.auto.service.AutoService
 
 @AutoService(IssueRegistry::class)
 class DebugLogIssueRegistry : IssueRegistry() {
+    override val vendor = Vendor(
+        vendorName = "CMG Mobile Apps",
+        identifier = PROJECT_ARTIFACT,
+        feedbackUrl = FEEDBACK_URL,
+        contact = FEEDBACK_URL,
+    )
     override val issues = LogDetector.issues.asList()
     override val api = CURRENT_API
 }
