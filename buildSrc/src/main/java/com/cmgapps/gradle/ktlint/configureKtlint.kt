@@ -29,7 +29,7 @@ fun Project.configureKtlint() {
         register("ktlintFormat", JavaExec::class.java) {
             group = "Formatting"
             description = "Fix Kotlin code style deviations."
-            main = "com.pinterest.ktlint.Main"
+            mainClass.set("com.pinterest.ktlint.Main")
             classpath = ktlintConfiguration
             args = listOf("-F", "src/**/*.kt")
         }
@@ -37,12 +37,12 @@ fun Project.configureKtlint() {
         val ktlintTask = register("ktlint", JavaExec::class.java) {
             group = "Verification"
             description = "Check Kotlin code style."
-            main = "com.pinterest.ktlint.Main"
+            mainClass.set("com.pinterest.ktlint.Main")
             classpath = ktlintConfiguration
             args = listOf(
                 "src/**/*.kt",
                 "--reporter=plain",
-                "--reporter=html,output=${buildDir}/reports/ktlint.html"
+                "--reporter=html,output=$buildDir/reports/ktlint.html"
             )
         }
 

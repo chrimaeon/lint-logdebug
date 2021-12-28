@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+import org.gradle.api.Project
 import java.io.File
+import java.util.Locale
 import java.util.Properties
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
-import org.gradle.api.Project
 
 class PropertiesEnvDelegate(propertiesFile: File) : ReadOnlyProperty<Any?, String?> {
 
@@ -43,7 +44,7 @@ class PropertiesEnvDelegate(propertiesFile: File) : ReadOnlyProperty<Any?, Strin
             }
         }
 
-        return System.getenv("SONATYPE_${property.name.toUpperCase()}").also {
+        return System.getenv("SONATYPE_${property.name.toUpperCase(Locale.ROOT)}").also {
             value = it
         }
     }

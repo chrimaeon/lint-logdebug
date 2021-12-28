@@ -69,11 +69,8 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        dependsOn(generateBuildConfig)
-    }
-
-    withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+        dependsOn(generateBuildConfig)
     }
 
     withType<Test> {
@@ -109,7 +106,6 @@ tasks {
         }
     }
 }
-
 
 dependencies {
     compileOnly(Deps.LINT_API)

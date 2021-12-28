@@ -29,15 +29,15 @@ object Deps {
 
 object Version {
 
-    const val KOTLIN = "1.5.0"
+    const val KOTLIN = "1.6.10"
 
-    const val VERSIONS_PLUGIN = "0.38.0"
-    const val ANDROID_GRADLE_PLUGIN = "7.0.0-alpha15"
-    const val DOKKA_PLUGIN = "1.4.32"
+    const val VERSIONS_PLUGIN = "0.39.0"
+    const val ANDROID_GRADLE_PLUGIN = "7.0.4"
+    const val DOKKA_PLUGIN = "1.6.10"
 
-    internal const val AUTO_SERVICE = "1.0"
+    internal const val AUTO_SERVICE = "1.0.1"
     internal const val HAMCREST = "2.2"
     internal const val JUNIT = "4.13.2"
-    internal const val KTLINT = "0.41.0"
-    internal const val LINT = "30.0.0-alpha15"
+    internal const val KTLINT = "0.43.2"
+    internal const val LINT = "30.0.4"
 }
