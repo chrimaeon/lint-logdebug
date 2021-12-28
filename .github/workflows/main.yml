@@ -39,7 +39,7 @@ jobs:
       - name: Download dependencies
         run: ./gradlew dependencies
       - name: Test
-        run: ./gradlew :checks:check :checks:jacocoTestReport :checks:jacocoTestCoverageVerification
+        run: ./gradlew :checks:check :checks:koverHtmlReport :checks:koverVerify
       - name: Archive Test results
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
