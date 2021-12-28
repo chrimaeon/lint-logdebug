@@ -1,0 +1,50 @@
+name: Build & Test
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  checkAndUnitTest:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # region Setup
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Generate cache key
+        run: ./scripts/checksum.sh checksum.txt
+
+      - name: Gradle Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches/modules-*
+            ~/.gradle/caches/jars-*
+            ~/.gradle/caches/build-cache-*
+          key: gradle-${{ hashFiles('checksum.txt') }}
+
+      - name: Gradle Wrapper Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: Download dependencies
+        run: ./gradlew dependencies
+      - name: Test
+        run: ./gradlew :checks:check :checks:jacocoTestReport :checks:jacocoTestCoverageVerification
+      - name: Archive Test results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: |
+            check/build/reports/*
+            check/build/test-results/*

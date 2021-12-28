@@ -20,9 +20,9 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.detector.api.CURRENT_API
 import com.android.tools.lint.detector.api.TextFormat
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.hasProperty
+import org.hamcrest.Matchers.`is`
 import org.junit.Before
 import org.junit.Test
 
