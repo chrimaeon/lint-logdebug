@@ -1,7 +1,7 @@
 # Android Lint for log output [![Build & Test](https://github.com/chrimaeon/lint-logdebug/actions/workflows/main.yml/badge.svg?style=for-the-badge)](https://github.com/chrimaeon/lint-logdebug/actions/workflows/main.yml)
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
-[![MavenCentral](https://img.shields.io/maven-central/v/com.cmgapps.android/lint-logdebug?style=for-the-badge)](https://repo1.maven.org/maven2/com/cmgapps/android/lint-logdebug/0.8.0/)
+[![MavenCentral](https://img.shields.io/maven-central/v/com.cmgapps.android/lint-logdebug?style=for-the-badge)](https://repo1.maven.org/maven2/com/cmgapps/android/lint-logdebug)
 
 Check your code for missing conditional surrounding your log output.
 

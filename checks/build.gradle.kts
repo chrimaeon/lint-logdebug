@@ -25,7 +25,6 @@ plugins {
     kotlin("kapt") version Version.KOTLIN
     id("org.jetbrains.kotlinx.kover") version "0.4.4"
     id("com.cmgapps.gradle.ktlint")
-    id("org.jetbrains.dokka") version Version.DOKKA_PLUGIN
 }
 
 @OptIn(ExperimentalPathApi::class)
