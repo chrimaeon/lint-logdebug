@@ -30,25 +30,23 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility(JavaVersion.VERSION_1_8)
-        targetCompatibility(JavaVersion.VERSION_1_8)
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     buildFeatures {
         buildConfig = false
     }
-
 }
 
-val checksProject = project(":checks")
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
-    from(checksProject.sourceSets["main"].allSource)
+    from(projectDir.resolve("README.md"))
 }
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
-    from(checksProject.tasks["dokkaJavadoc"])
+    from(projectDir.resolve("README.md"))
 }
 
 val projectGroup: String by project
@@ -79,7 +77,7 @@ afterEvaluate {
                     url.set(projectWebsiteUrl)
 
                     issueManagement {
-                        url.set("${projectWebsiteUrl}/issues")
+                        url.set("$projectWebsiteUrl/issues")
                         system.set("github")
                     }
 
