@@ -39,13 +39,10 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 
-@Suppress("UnstableApiUsage")
 class LogDetector : Detector(), SourceCodeScanner {
-
     override fun getApplicableMethodNames(): List<String> = listOf("d", "v")
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-
         val evaluator = context.evaluator
 
         if (!evaluator.isMemberInClass(method, LOG_CLS) &&
@@ -62,10 +59,17 @@ class LogDetector : Detector(), SourceCodeScanner {
             val message = "The log call $className.${node.methodName}(...) should be " +
                 "conditional: surround with `if (Log.isLoggable(...))` or " +
                 "`if (BuildConfig.DEBUG) { ... }`"
-            context.report(ISSUE, node, context.getLocation(node), message, quickFix(node, method, evaluator, context))
+            context.report(
+                ISSUE,
+                node,
+                context.getLocation(node),
+                message,
+                quickFix(node, method, evaluator, context),
+            )
         }
     }
 
+    @Suppress("kotlin:S3776")
     private fun checkWithinConditional(start: UElement?): Boolean {
         if (start == null) {
             return false
@@ -105,38 +109,34 @@ class LogDetector : Detector(), SourceCodeScanner {
         node: UCallExpression,
         method: PsiMethod,
         evaluator: JavaEvaluator,
-        context: JavaContext
+        context: JavaContext,
     ): LintFix {
         val isKotlin = isKotlin(node.sourcePsi)
 
-        val sourceString = if (isKotlin) {
-            node.uastParent!!.asSourceString()
-        } else {
-            "${node.asSourceString()};"
-        }
-
         val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
+
+        val sourceCodeRenderString = node.uastParent?.asRenderString()
 
         val buildConfigFix =
             """
             if (${project.`package`}.BuildConfig.DEBUG) {
-                $sourceString
+                $sourceCodeRenderString${if (!isKotlin) ";" else ""}
             }"""
                 .trimIndent()
 
-        val location = context.getRangeLocation(node.uastParent!!, 0, node, if (isKotlin) 0 else 1)
+        val location = context.getLocation(node)
 
         return fix().group().apply {
             add(
                 fix().name("Surround with `if (BuildConfig.DEBUG)`")
                     .replace()
                     .range(location)
-                    .text(sourceString)
+                    .all()
                     .shortenNames()
                     .reformat(true)
                     .with(buildConfigFix)
                     .robot(true)
-                    .build()
+                    .build(),
             )
 
             if (evaluator.isMemberInClass(method, LOG_CLS)) {
@@ -145,19 +145,19 @@ class LogDetector : Detector(), SourceCodeScanner {
                 val isLoggableFix =
                     """
                     if ($LOG_CLS.isLoggable($tag, ${getLogLevel(node.methodName!!)})) {
-                        $sourceString
+                        $sourceCodeRenderString${if (!isKotlin) ";" else ""}
                     }"""
                         .trimIndent()
                 add(
                     fix().name("Surround with `if (Log.isLoggable(...))`")
                         .replace()
                         .range(location)
-                        .text(sourceString)
+                        .all()
                         .shortenNames()
                         .reformat(true)
                         .with(isLoggableFix)
                         .robot(true)
-                        .build()
+                        .build(),
                 )
             }
         }.build()
@@ -196,7 +196,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             priority = 5,
             severity = Severity.WARNING,
             androidSpecific = true,
-            implementation = Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            implementation = Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
 
         val issues = arrayOf(ISSUE)

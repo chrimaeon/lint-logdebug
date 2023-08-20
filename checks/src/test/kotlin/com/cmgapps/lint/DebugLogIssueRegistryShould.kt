@@ -57,8 +57,8 @@ class DebugLogIssueRegistryShould {
                     |Contact: https://github.com/chrimaeon/lint-logdebug/issues
                     |Feedback: https://github.com/chrimaeon/lint-logdebug/issues
                     |
-                """.trimMargin()
-            )
+                """.trimMargin(),
+            ),
         )
     }
 }
