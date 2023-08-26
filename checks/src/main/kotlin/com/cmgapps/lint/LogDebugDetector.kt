@@ -39,7 +39,7 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 
-class LogDetector : Detector(), SourceCodeScanner {
+class LogDebugDetector : Detector(), SourceCodeScanner {
     override fun getApplicableMethodNames(): List<String> = listOf("d", "v")
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
@@ -196,7 +196,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             priority = 5,
             severity = Severity.WARNING,
             androidSpecific = true,
-            implementation = Implementation(LogDetector::class.java, Scope.JAVA_FILE_SCOPE),
+            implementation = Implementation(LogDebugDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
 
         val issues = arrayOf(ISSUE)

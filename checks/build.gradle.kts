@@ -108,6 +108,8 @@ dependencies {
     compileOnly(libs.android.lintApi)
     compileOnly(libs.android.lintChecks)
     compileOnly(libs.auto.serviceAnnotations)
+    // keep as compile only so "stdlibs" are not included as a dependency
+    compileOnly(libs.kotlin.stdlib7)
     kapt(libs.auto.serviceAnnotations)
 
     testImplementation(libs.junit)

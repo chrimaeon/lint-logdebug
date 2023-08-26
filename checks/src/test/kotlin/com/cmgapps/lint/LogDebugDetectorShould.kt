@@ -23,7 +23,7 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
 import org.junit.Test
 
-class LogDetectorShould {
+class LogDebugDetectorShould {
 
     private val timberStub = java(
         """
@@ -61,7 +61,7 @@ class LogDetectorShould {
                     }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -103,7 +103,7 @@ class LogDetectorShould {
                     }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
     }
@@ -122,7 +122,7 @@ class LogDetectorShould {
                     }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
     }
@@ -140,7 +140,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect(
@@ -182,7 +182,7 @@ class LogDetectorShould {
                    }
                 }""",
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect("No warnings.")
@@ -201,7 +201,7 @@ class LogDetectorShould {
                    }
                 }""",
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect("No warnings.")
@@ -221,7 +221,7 @@ class LogDetectorShould {
                    }
                 }""",
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -258,7 +258,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -295,7 +295,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -332,7 +332,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -369,7 +369,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -407,7 +407,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -447,7 +447,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -489,7 +489,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
             .expectFixDiffs("")
@@ -511,7 +511,7 @@ class LogDetectorShould {
                 }
                 """,
             ).indented(),
-        ).issues(*LogDetector.issues)
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
             .expectFixDiffs("")

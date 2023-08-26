@@ -18,9 +18,10 @@ package com.cmgapps.lint
 
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.detector.api.CURRENT_API
+import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.TextFormat
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.contains
+import org.hamcrest.Matchers.hasItem
 import org.hamcrest.Matchers.hasProperty
 import org.hamcrest.Matchers.`is`
 import org.junit.Before
@@ -32,13 +33,14 @@ class DebugLogIssueRegistryShould {
 
     @Before
     fun setUp() {
+        @Suppress("CheckResult")
         lint()
         registry = DebugLogIssueRegistry()
     }
 
     @Test
     fun `check for issue with id LogDebugConditional`() {
-        assertThat(registry.issues, contains(hasProperty("id", `is`("LogDebugConditional"))))
+        assertThat(registry.issues, hasItem<Issue>(hasProperty("id", `is`("LogDebugConditional"))))
     }
 
     @Test

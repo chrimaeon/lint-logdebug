@@ -137,3 +137,7 @@ afterEvaluate {
 dependencies {
     lintPublish(project(":checks"))
 }
+
+afterEvaluate {
+    logger.lifecycle(configurations.get("lintPublish").resolve().joinToString())
+}

@@ -28,3 +28,4 @@ auto_serviceAnnotations = { module = "com.google.auto.service:auto-service-annot
 hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 junit = { module = "junit:junit", version.ref = "junit" }
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+kotlin-stdlib7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin" }

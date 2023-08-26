@@ -31,6 +31,6 @@ class DebugLogIssueRegistry : IssueRegistry() {
         feedbackUrl = FEEDBACK_URL,
         contact = FEEDBACK_URL,
     )
-    override val issues = LogDetector.issues.asList()
+    override val issues = LogDebugDetector.issues.asList()
     override val api = CURRENT_API
 }
