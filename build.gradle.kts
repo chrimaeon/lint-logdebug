@@ -23,12 +23,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:" + Version.ANDROID_GRADLE_PLUGIN)
+        classpath(libs.android.gradlePlugin)
     }
 }
 
 plugins {
-    id("com.github.ben-manes.versions") version Version.VERSIONS_PLUGIN
+    alias(libs.plugins.versions)
 }
 
 allprojects {
@@ -53,6 +53,6 @@ tasks {
 
     wrapper {
         distributionType = Wrapper.DistributionType.ALL
-        gradleVersion = "7.3.3"
+        gradleVersion = "8.3"
     }
 }

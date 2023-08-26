@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-import kotlinx.kover.api.VerificationValueType.COVERED_LINES_PERCENTAGE
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.div
 
 plugins {
-    kotlin("jvm") version Version.KOTLIN
-    kotlin("kapt") version Version.KOTLIN
-    id("org.jetbrains.kotlinx.kover") version "0.4.4"
+    kotlin("jvm") version libs.versions.kotlin
+    kotlin("kapt") version libs.versions.kotlin
+    alias(libs.plugins.kover)
     id("com.cmgapps.gradle.ktlint")
 }
 
-@OptIn(ExperimentalPathApi::class)
-val buildConfigDirPath = buildDir.toPath() / "generated" / "source" / "buildConfig"
+val buildConfigDirPath: Provider<Directory> =
+    layout.buildDirectory.dir("generated/source/buildConfig")
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+kotlin {
+    jvmToolchain(17)
 }
 
 sourceSets {
@@ -54,22 +50,21 @@ tasks {
         outputs.dir(outputDir)
 
         doLast {
-            outputDir.toFile().mkdirs()
+            outputDir.get().asFile.mkdirs()
             val packageName = "com.cmgapps.lint"
-            file(outputDir.resolve("BuildConfig.kt")).bufferedWriter().use {
+            file(outputDir.get().asFile.resolve("BuildConfig.kt")).bufferedWriter().use {
                 it.write(
                     """
                         |package $packageName
                         |const val FEEDBACK_URL = "$feedbackUrl"
                         |const val PROJECT_ARTIFACT = "$projectArtifactId"
-                    """.trimMargin()
+                    """.trimMargin(),
                 )
             }
         }
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
         dependsOn(generateBuildConfig)
     }
 
@@ -90,38 +85,36 @@ tasks {
                 "Built-Date" to Date(),
                 "Built-JDK" to System.getProperty("java.version"),
                 "Built-Gradle" to gradle.gradleVersion,
-                "Lint-Registry-v2" to "com.cmgapps.lint.DebugLogIssueRegistry"
+                "Lint-Registry-v2" to "com.cmgapps.lint.DebugLogIssueRegistry",
             )
         }
     }
+}
 
-    koverVerify {
-        rule {
-            name = "Minimal line coverage rate in percent"
-            bound {
-                minValue = 80
-                valueType = COVERED_LINES_PERCENTAGE
+koverReport {
+    defaults {
+        verify {
+            rule {
+                bound {
+                    minValue = 80
+                    aggregation = kotlinx.kover.gradle.plugin.dsl.AggregationType.COVERED_PERCENTAGE
+                }
             }
         }
     }
 }
 
 dependencies {
-    compileOnly(Deps.LINT_API)
-    compileOnly(Deps.LINT_CHECKS)
-    compileOnly(kotlin("stdlib-jdk8", Version.KOTLIN))
-    // Necessary to bump a transitive dependency.
-    compileOnly(kotlin("reflect", Version.KOTLIN))
+    compileOnly(libs.android.lintApi)
+    compileOnly(libs.android.lintChecks)
+    compileOnly(libs.auto.serviceAnnotations)
+    // keep as compile only so "stdlibs" are not included as a dependency
+    compileOnly(libs.kotlin.stdlib7)
+    kapt(libs.auto.serviceAnnotations)
 
-    compileOnly(Deps.AUTO_SERVICE_ANNOTATIONS)
-    kapt(Deps.AUTO_SERVICE)
-
-    // Necessary to bump a transitive dependency.
-    testImplementation(kotlin("reflect", Version.KOTLIN))
-
-    testImplementation(Deps.JUNIT)
-    testImplementation(Deps.HAMCREST)
-    testImplementation(Deps.LINT)
-    testImplementation(Deps.LINT_TEST)
-    testImplementation(Deps.ANDROID_TESTUTILS)
+    testImplementation(libs.junit)
+    testImplementation(libs.hamcrest)
+    testImplementation(libs.android.lint)
+    testImplementation(libs.android.lintTest)
+    testImplementation(libs.android.testutils)
 }

@@ -1,0 +1,31 @@
+[versions]
+kotlin = "1.9.0"
+
+versionsPlugin = "0.47.0"
+androidGradlePlugin = "8.1.0"
+koverPlugin = "0.7.3"
+
+autoService = "1.1.1"
+hamcrest = "2.2"
+junit = "4.13.2"
+ktlint = "0.50.0"
+lint = "31.1.0"
+
+[plugins]
+versions = { id = "com.github.ben-manes.versions", version.ref = "versionsPlugin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "koverPlugin" }
+
+[libraries]
+android_gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
+
+android_testutils = { module = "com.android.tools:testutils", version.ref = "lint" }
+android_lint = { module = "com.android.tools.lint:lint", version.ref = "lint" }
+android_lintApi = { module = "com.android.tools.lint:lint-api", version.ref = "lint" }
+android_lintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "lint" }
+android_lintTest = { module = "com.android.tools.lint:lint-tests", version.ref = "lint" }
+auto_service = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
+auto_serviceAnnotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
+junit = { module = "junit:junit", version.ref = "junit" }
+ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+kotlin-stdlib7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin" }

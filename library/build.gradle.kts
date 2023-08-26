@@ -21,21 +21,25 @@ plugins {
 }
 
 android {
-    buildToolsVersion = "30.0.3"
+    namespace = "com.cmgapps.lint.logdebug"
+    buildToolsVersion = "34.0.0"
 
-    compileSdk = 30
+    compileSdk = 34
     defaultConfig {
         minSdk = 15
-        targetSdk = 30
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
         buildConfig = false
+    }
+
+    publishing {
+        singleVariant("release")
     }
 }
 
@@ -63,7 +67,6 @@ afterEvaluate {
     publishing {
         publications {
             register<MavenPublication>("libraryMaven") {
-
                 from(components["release"])
 
                 artifact(sourcesJar.get())
@@ -110,7 +113,8 @@ afterEvaluate {
         repositories {
             maven {
                 name = "sonatype"
-                val releaseUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                val releaseUrl =
+                    uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                 val snapshotUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
                 url = if (projectVersionName.endsWith("SNAPSHOT")) snapshotUrl else releaseUrl
 
@@ -132,4 +136,8 @@ afterEvaluate {
 
 dependencies {
     lintPublish(project(":checks"))
+}
+
+afterEvaluate {
+    logger.lifecycle(configurations.get("lintPublish").resolve().joinToString())
 }

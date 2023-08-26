@@ -20,28 +20,29 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
-import org.junit.Ignore
+import com.android.tools.lint.checks.infrastructure.TestMode
 import org.junit.Test
 
-@Suppress("UnstableApiUsage")
-class LogDetectorShould {
+class LogDebugDetectorShould {
 
     private val timberStub = java(
         """
         package timber.log;
         public class Timber {
             private Timber() {}
-            
+
             public static void d(String message, Object... args) {}
             public static void v(String message, Object... args) {}
+            public static void e(String message, Object... args) {}
             public static Tree tag(String tag) {}
-            
+
             public static class Tree {
                 public void d(String message, Object... args) {}
                 public void v(String message, Object... args) {}
+                public void e(String message, Object... args) {}
             }
         }
-      """
+      """,
     ).indented()
 
     private val manifestStub = manifest("<manifest package=\"com.cmgapps\"/>")
@@ -58,9 +59,9 @@ class LogDetectorShould {
                            Log.d(TAG, "Message");
                         }
                     }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -68,23 +69,23 @@ class LogDetectorShould {
                        Log.d(TAG, "Message");
                        ~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Log.d(TAG, "Message");
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Log.d(TAG, "Message");
-                + }
-                Fix for src/Test.java line 4: Surround with `if (Log.isLoggable(...))`:
+                + };
+                Autofix for src/Test.java line 4: Surround with `if (Log.isLoggable(...))`:
                 @@ -4 +4
                 -        Log.d(TAG, "Message");
                 +        if (Log.isLoggable(TAG, Log.DEBUG)) {
                 +     Log.d(TAG, "Message");
-                + }
-                """
+                + };
+                """,
             )
     }
 
@@ -100,9 +101,9 @@ class LogDetectorShould {
                            }
                        }
                     }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
     }
@@ -119,9 +120,9 @@ class LogDetectorShould {
                            }
                        }
                     }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
     }
@@ -137,9 +138,10 @@ class LogDetectorShould {
                         android.util.Log.v("TestTag", "Message")
                     }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
+            .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect(
                 """
@@ -147,23 +149,23 @@ class LogDetectorShould {
                         android.util.Log.v("TestTag", "Message")
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.kt line 3: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -3 +3
                 -         android.util.Log.v("TestTag", "Message")
                 +         if (com.cmgapps.BuildConfig.DEBUG) {
                 +     android.util.Log.v("TestTag", "Message")
                 + }
-                Fix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...))`:
+                Autofix for src/Test.kt line 3: Surround with `if (Log.isLoggable(...))`:
                 @@ -3 +3
                 -         android.util.Log.v("TestTag", "Message")
                 +         if (android.util.Log.isLoggable("TestTag", Log.VERBOSE)) {
                 +     android.util.Log.v("TestTag", "Message")
                 + }
-                """
+                """,
             )
     }
 
@@ -178,9 +180,10 @@ class LogDetectorShould {
                            android.util.Log.v("TestTag", "Message")
                        }
                    }
-                }"""
-            ).indented()
-        ).issues(*LogDetector.issues)
+                }""",
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
+            .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect("No warnings.")
     }
@@ -196,9 +199,10 @@ class LogDetectorShould {
                            android.util.Log.d("TestTag", "Message")
                        }
                    }
-                }"""
-            ).indented()
-        ).issues(*LogDetector.issues)
+                }""",
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
+            .skipTestModes(TestMode.IF_TO_WHEN)
             .run()
             .expect("No warnings.")
     }
@@ -215,9 +219,9 @@ class LogDetectorShould {
                    fun test() {
                        Timber.d("Message")
                    }
-                }"""
-            ).indented()
-        ).issues(*LogDetector.issues)
+                }""",
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -225,7 +229,7 @@ class LogDetectorShould {
                        Timber.d("Message")
                        ~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
@@ -235,7 +239,7 @@ class LogDetectorShould {
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Timber.d("Message")
                 + }
-                """
+                """,
             )
     }
 
@@ -252,9 +256,9 @@ class LogDetectorShould {
                        Timber.d("Message");
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -262,17 +266,17 @@ class LogDetectorShould {
                        Timber.d("Message");
                        ~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.d("Message");
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Timber.d("Message");
-                + }
-                """
+                + };
+                """,
             )
     }
 
@@ -289,9 +293,9 @@ class LogDetectorShould {
                        Timber.v("Message");
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -299,17 +303,17 @@ class LogDetectorShould {
                        Timber.v("Message");
                        ~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.v("Message");
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Timber.v("Message");
-                + }
-                """
+                + };
+                """,
             )
     }
 
@@ -326,9 +330,9 @@ class LogDetectorShould {
                        Timber.tag("TestTag").v("Message");
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -336,17 +340,17 @@ class LogDetectorShould {
                        Timber.tag("TestTag").v("Message");
                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.tag("TestTag").v("Message");
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Timber.tag("TestTag").v("Message");
-                + }
-                """
+                + };
+                """,
             )
     }
 
@@ -363,9 +367,9 @@ class LogDetectorShould {
                        Timber.tag("TestTag").v("Message")
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -373,17 +377,17 @@ class LogDetectorShould {
                        Timber.tag("TestTag").v("Message")
                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.tag("TestTag").v("Message")
                 +        if (com.cmgapps.BuildConfig.DEBUG) {
                 +     Timber.tag("TestTag").v("Message")
                 + }
-                """
+                """,
             )
     }
 
@@ -401,9 +405,9 @@ class LogDetectorShould {
                            .v("Message");
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -411,23 +415,22 @@ class LogDetectorShould {
                        Timber.tag("TestTag")
                        ^
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.tag("TestTag")
                 -            .v("Message");
-                +         if (com.cmgapps.BuildConfig.DEBUG) {
-                +      Timber.tag("TestTag")
-                + .v("Message");
-                +  }
-                """
+                +        if (com.cmgapps.BuildConfig.DEBUG) {
+                +     Timber.tag("TestTag").v("Message");
+                + };
+                """,
             )
     }
 
-    @Ignore("Quick fix not working for kotlin")
+    // @Ignore("Quick fix not working for kotlin")
     @Test
     fun `report errors if Timber in kotlin class for verbose and tag with new line`() {
         lint().files(
@@ -442,9 +445,9 @@ class LogDetectorShould {
                            .v("Message")
                    }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect(
                 """
@@ -452,18 +455,18 @@ class LogDetectorShould {
                        Timber.tag("TestTag")
                        ^
                 0 errors, 1 warnings
-                """
+                """,
             )
             .expectFixDiffs(
                 """
-                Fix for src/Test.java line 4: Surround with `if (BuildConfig.DEBUG)`:
+                Autofix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Timber.tag("TestTag")
-                +        if (BuildConfig.DEBUG) {
-                +     Timber.tag("TestTag")
-                @@ -6 +7
+                -            .v("Message")
+                +        if (com.cmgapps.BuildConfig.DEBUG) {
+                +     Timber.tag("TestTag").v("Message")
                 + }
-                """
+                """,
             )
     }
 
@@ -477,17 +480,40 @@ class LogDetectorShould {
                         println(text)
                     }
                 }
-                
+
                 class OtherClass {
                     fun callD() {
                         val test = CustomClass()
                         test.d("Test")
                     }
                 }
-                """
-            ).indented()
-        ).issues(*LogDetector.issues)
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
             .run()
             .expect("No warnings.")
+            .expectFixDiffs("")
+    }
+
+    @Test
+    fun `not check if error log with 'e'`() {
+        lint().files(
+            timberStub,
+            manifestStub,
+            kotlin(
+                """
+                import timber.log.Timber
+                class Test {
+                   fun test() {
+                       Timber.tag("TestTag")
+                           .e("Error")
+                   }
+                }
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
+            .run()
+            .expect("No warnings.")
+            .expectFixDiffs("")
     }
 }
