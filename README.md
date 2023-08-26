@@ -20,7 +20,7 @@ Add this to your dependencies in the modules `build.gradle`
 
 ```kotlin
 dependencies {
-    implementation("com.cmgapps.android:lint-logdebug:0.8.0")
+    implementation("com.cmgapps.android:lint-logdebug:1.0.0")
 }
 ```
 
