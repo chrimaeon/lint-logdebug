@@ -21,6 +21,7 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
+import org.junit.Ignore
 import org.junit.Test
 
 class LogDebugDetectorShould {
@@ -515,5 +516,49 @@ class LogDebugDetectorShould {
             .run()
             .expect("No warnings.")
             .expectFixDiffs("")
+    }
+
+    @Test
+    @Ignore("elis operator is not rendered correctly")
+    fun `render quickfix with elvis operator correctly`() {
+        lint().files(
+            timberStub,
+            manifestStub,
+            kotlin(
+                """
+                import android.util.Log
+                class Test {
+                   fun test() {
+                       Log.d("TestTag", null ?: "Message")
+                   }
+                }
+                """,
+            ).indented(),
+        ).issues(*LogDebugDetector.issues)
+            .run()
+            .expect(
+                """
+                src/Test.kt:4: Warning: The log call Log.d(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogDebugConditional]
+                       Log.d("TestTag", null ?: "Message")
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """,
+            )
+            .expectFixDiffs(
+                """
+                Autofix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
+                @@ -4 +4
+                -        Log.d("TestTag", null ?: "Message")
+                +                    if (com.cmgapps.BuildConfig.DEBUG) {
+                +                 Log.d("TestTag", null ?: "Message")
+                +             }
+                Autofix for src/Test.kt line 4: Surround with `if (Log.isLoggable(...))`:
+                @@ -4 +4
+                -        Log.d("TestTag", null ?: "Message")
+                +                            if (Log.isLoggable("TestTag", Log.DEBUG)) {
+                +                         Log.d("TestTag", null ?: "Message")
+                +                     }
+                """,
+            )
     }
 }
