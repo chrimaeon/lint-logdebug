@@ -42,7 +42,11 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 class LogDebugDetector : Detector(), SourceCodeScanner {
     override fun getApplicableMethodNames(): List<String> = listOf("d", "v")
 
-    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    override fun visitMethodCall(
+        context: JavaContext,
+        node: UCallExpression,
+        method: PsiMethod,
+    ) {
         val evaluator = context.evaluator
 
         if (!evaluator.isMemberInClass(method, LOG_CLS) &&
@@ -119,7 +123,7 @@ class LogDebugDetector : Detector(), SourceCodeScanner {
 
         val buildConfigFix =
             """
-            if (${project.`package`}.BuildConfig.DEBUG) {
+            if (${project.applicationId}.BuildConfig.DEBUG) {
                 $sourceCodeRenderString${if (!isKotlin) ";" else ""}
             }"""
                 .trimIndent()
