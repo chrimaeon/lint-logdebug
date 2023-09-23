@@ -1,15 +1,15 @@
 [versions]
-kotlin = "1.9.0"
+kotlin = "1.9.10"
 
-versionsPlugin = "0.47.0"
-androidGradlePlugin = "8.1.0"
+versionsPlugin = "0.48.0"
+androidGradlePlugin = "8.1.1"
 koverPlugin = "0.7.3"
 
 autoService = "1.1.1"
 hamcrest = "2.2"
 junit = "4.13.2"
-ktlint = "0.50.0"
-lint = "31.1.0"
+ktlint = "1.0.0"
+lint = "31.1.1"
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version.ref = "versionsPlugin" }
@@ -27,5 +27,5 @@ auto_service = { module = "com.google.auto.service:auto-service", version.ref = 
 auto_serviceAnnotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
 hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 junit = { module = "junit:junit", version.ref = "junit" }
-ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+ktlint = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 kotlin-stdlib7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin" }

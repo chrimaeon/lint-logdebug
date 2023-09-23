@@ -25,12 +25,13 @@ import com.google.auto.service.AutoService
 
 @AutoService(IssueRegistry::class)
 class DebugLogIssueRegistry : IssueRegistry() {
-    override val vendor = Vendor(
-        vendorName = "CMG Mobile Apps",
-        identifier = PROJECT_ARTIFACT,
-        feedbackUrl = FEEDBACK_URL,
-        contact = FEEDBACK_URL,
-    )
+    override val vendor =
+        Vendor(
+            vendorName = "CMG Mobile Apps",
+            identifier = PROJECT_ARTIFACT,
+            feedbackUrl = FEEDBACK_URL,
+            contact = FEEDBACK_URL,
+        )
     override val issues = LogDebugDetector.issues.asList()
     override val api = CURRENT_API
 }

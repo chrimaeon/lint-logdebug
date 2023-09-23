@@ -28,8 +28,7 @@ import org.junit.Before
 import org.junit.Test
 
 class DebugLogIssueRegistryShould {
-
-    lateinit var registry: DebugLogIssueRegistry
+    private lateinit var registry: DebugLogIssueRegistry
 
     @Before
     fun setUp() {
