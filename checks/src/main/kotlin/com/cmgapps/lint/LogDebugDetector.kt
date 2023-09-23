@@ -60,9 +60,10 @@ class LogDebugDetector : Detector(), SourceCodeScanner {
 
         if (!withinConditional) {
             val className = if (evaluator.isMemberInClass(method, LOG_CLS)) "Log" else "Timber"
-            val message = "The log call $className.${node.methodName}(...) should be " +
-                "conditional: surround with `if (Log.isLoggable(...))` or " +
-                "`if (BuildConfig.DEBUG) { ... }`"
+            val message =
+                "The log call $className.${node.methodName}(...) should be " +
+                    "conditional: surround with `if (Log.isLoggable(...))` or " +
+                    "`if (BuildConfig.DEBUG) { ... }`"
             context.report(
                 ISSUE,
                 node,
@@ -119,8 +120,7 @@ class LogDebugDetector : Detector(), SourceCodeScanner {
 
         val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
 
-        val sourceCodeRenderString = node.uastParent?.asRenderString()
-
+        val sourceCodeRenderString = node.uastParent?.sourcePsi?.text
         val buildConfigFix =
             """
             if (${project.applicationId}.BuildConfig.DEBUG) {
@@ -167,12 +167,13 @@ class LogDebugDetector : Detector(), SourceCodeScanner {
         }.build()
     }
 
-    private fun getLogLevel(methodName: String) = when (methodName) {
-        // see getApplicableMethodNames for valid method names
-        "d" -> "Log.DEBUG"
-        "v" -> "Log.VERBOSE"
-        else -> ""
-    }
+    private fun getLogLevel(methodName: String) =
+        when (methodName) {
+            // see getApplicableMethodNames for valid method names
+            "d" -> "Log.DEBUG"
+            "v" -> "Log.VERBOSE"
+            else -> ""
+        }
 
     private fun getLastInQualifiedChain(node: UQualifiedReferenceExpression): UExpression {
         var last = node.selector
@@ -183,25 +184,27 @@ class LogDebugDetector : Detector(), SourceCodeScanner {
     }
 
     companion object {
-        private val ISSUE = Issue.create(
-            id = "LogDebugConditional",
-            briefDescription = "Unconditional Logging calls",
-            explanation = """
-                The BuildConfig class provides a constant, "DEBUG", which indicates \
-                whether the code is being built in release mode or in debug mode. In release mode, you typically \
-                want to strip out all the logging calls. Since the compiler will automatically remove all code \
-                which is inside a "if (false)" check, surrounding your logging calls with a check for \
-                BuildConfig.DEBUG is a good idea.
+        private val ISSUE =
+            Issue.create(
+                id = "LogDebugConditional",
+                briefDescription = "Unconditional Logging calls",
+                explanation =
+                    """
+                    The BuildConfig class provides a constant, "DEBUG", which indicates \
+                    whether the code is being built in release mode or in debug mode. In release mode, you typically \
+                    want to strip out all the logging calls. Since the compiler will automatically remove all code \
+                    which is inside a "if (false)" check, surrounding your logging calls with a check for \
+                    BuildConfig.DEBUG is a good idea.
 
-                If you **really** intend for the logging to be present in release mode, you can suppress this \
-                warning with a @SuppressLint annotation for the intentional logging calls.
-            """.trimIndent(),
-            category = Category.PERFORMANCE,
-            priority = 5,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = Implementation(LogDebugDetector::class.java, Scope.JAVA_FILE_SCOPE),
-        )
+                    If you **really** intend for the logging to be present in release mode, you can suppress this \
+                    warning with a @SuppressLint annotation for the intentional logging calls.
+                    """.trimIndent(),
+                category = Category.PERFORMANCE,
+                priority = 5,
+                severity = Severity.WARNING,
+                androidSpecific = true,
+                implementation = Implementation(LogDebugDetector::class.java, Scope.JAVA_FILE_SCOPE),
+            )
 
         val issues = arrayOf(ISSUE)
 

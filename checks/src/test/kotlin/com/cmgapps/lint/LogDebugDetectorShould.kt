@@ -21,30 +21,29 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
-import org.junit.Ignore
 import org.junit.Test
 
 class LogDebugDetectorShould {
+    private val timberStub =
+        java(
+            """
+                package timber.log;
+                public class Timber {
+                    private Timber() {}
 
-    private val timberStub = java(
-        """
-        package timber.log;
-        public class Timber {
-            private Timber() {}
+                    public static void d(String message, Object... args) {}
+                    public static void v(String message, Object... args) {}
+                    public static void e(String message, Object... args) {}
+                    public static Tree tag(String tag) {}
 
-            public static void d(String message, Object... args) {}
-            public static void v(String message, Object... args) {}
-            public static void e(String message, Object... args) {}
-            public static Tree tag(String tag) {}
-
-            public static class Tree {
-                public void d(String message, Object... args) {}
-                public void v(String message, Object... args) {}
-                public void e(String message, Object... args) {}
-            }
-        }
-      """,
-    ).indented()
+                    public static class Tree {
+                        public void d(String message, Object... args) {}
+                        public void v(String message, Object... args) {}
+                        public void e(String message, Object... args) {}
+                    }
+                }
+            """,
+        ).indented()
 
     private val manifestStub = manifest("<manifest package=\"com.cmgapps\"/>")
 
@@ -424,14 +423,14 @@ class LogDebugDetectorShould {
                 @@ -4 +4
                 -        Timber.tag("TestTag")
                 -            .v("Message");
-                +        if (com.cmgapps.BuildConfig.DEBUG) {
-                +     Timber.tag("TestTag").v("Message");
-                + };
+                +         if (com.cmgapps.BuildConfig.DEBUG) {
+                +      Timber.tag("TestTag")
+                + .v("Message");
+                +  };
                 """,
             )
     }
 
-    // @Ignore("Quick fix not working for kotlin")
     @Test
     fun `report errors if Timber in kotlin class for verbose and tag with new line`() {
         lint().files(
@@ -464,9 +463,10 @@ class LogDebugDetectorShould {
                 @@ -4 +4
                 -        Timber.tag("TestTag")
                 -            .v("Message")
-                +        if (com.cmgapps.BuildConfig.DEBUG) {
-                +     Timber.tag("TestTag").v("Message")
-                + }
+                +         if (com.cmgapps.BuildConfig.DEBUG) {
+                +      Timber.tag("TestTag")
+                + .v("Message")
+                +  }
                 """,
             )
     }
@@ -519,7 +519,6 @@ class LogDebugDetectorShould {
     }
 
     @Test
-    @Ignore("elis operator is not rendered correctly")
     fun `render quickfix with elvis operator correctly`() {
         lint().files(
             timberStub,
@@ -549,15 +548,15 @@ class LogDebugDetectorShould {
                 Autofix for src/Test.kt line 4: Surround with `if (BuildConfig.DEBUG)`:
                 @@ -4 +4
                 -        Log.d("TestTag", null ?: "Message")
-                +                    if (com.cmgapps.BuildConfig.DEBUG) {
-                +                 Log.d("TestTag", null ?: "Message")
-                +             }
+                +        if (com.cmgapps.BuildConfig.DEBUG) {
+                +     Log.d("TestTag", null ?: "Message")
+                + }
                 Autofix for src/Test.kt line 4: Surround with `if (Log.isLoggable(...))`:
                 @@ -4 +4
                 -        Log.d("TestTag", null ?: "Message")
-                +                            if (Log.isLoggable("TestTag", Log.DEBUG)) {
-                +                         Log.d("TestTag", null ?: "Message")
-                +                     }
+                +        if (Log.isLoggable("TestTag", Log.DEBUG)) {
+                +     Log.d("TestTag", null ?: "Message")
+                + }
                 """,
             )
     }
